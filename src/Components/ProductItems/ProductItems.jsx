@@ -10,13 +10,13 @@ export default function ProductItems({product,wishList}) {
   
   let {addProductToWishlist,setWishlist,removeProductInWishlist} = useContext(wishlistContext);
 let {addProductToCart}=useContext(cartContext);
-console.log(wishList)
+// console.log(wishList)
 async function toggleWishList(id) {
-  const isInWishlist = wishList.some((product) => product._id === id);
+  const isInWishlist = wishList?.some((product) => product?._id === id);
 
   if (isInWishlist) {
     // If the product is already in the wishlist, remove it
-    setWishlist((prevWishlist) => prevWishlist.filter((product) => product._id !== id));
+    setWishlist((prevWishlist) => prevWishlist?.filter((product) => product?._id !== id));
     
     // Optionally, handle the API call for removing the item from the wishlist
     try {
@@ -145,26 +145,26 @@ async function addProductItemToCart(id) {
     {product.map((productInfo) => {
       // eslint-disable-next-line react/jsx-key
       return (
-        <div className="w-[90%] md:w-1/4 lg:w-1/5 xl:w-1/6 mx-auto product mb-6 md:p-3 md:m-0  p-2 py-3 " key={productInfo.id}>
+        <div className="w-[90%] md:w-1/4 lg:w-1/5 xl:w-1/6 mx-auto product mb-6 md:p-3 md:m-0  p-2 py-3 " key={productInfo?.id}>
           <div className=" rounded-md shadow-md p-3  product-card">
             <Link
-              to={`/product-details/${productInfo.id}/${productInfo.category.name}`}
+              to={`/product-details/${productInfo?.id}/${productInfo?.category.name}`}
             >
               <img
                 className="w-full md:h-60 rounded-md md:object-cover "
-                src={productInfo.imageCover}
-                alt={productInfo.title}
+                src={productInfo?.imageCover}
+                alt={productInfo?.title}
               />
               <span className="font-light text-[#0D9488] block pt-1">
-                {productInfo.category.name}
+                {productInfo?.category?.name}
               </span>
               <span className="font-semibold text-gray-500 ">
-                {productInfo.title.split(" ").slice(0, 3).join(" ")}
+                {productInfo?.title.split(" ").slice(0, 3).join(" ")}
               </span>
               <div className="flex justify-between my-3">
-                <span>{productInfo.price} <span className="text-gray-700 font-semibold">EGP</span></span>
+                <span>{productInfo?.price} <span className="text-gray-700 font-semibold">EGP</span></span>
                 <span>
-                  {productInfo.ratingsQuantity}
+                  {productInfo?.ratingsQuantity}
                   <i className="fas fa-star text-yellow-500 ms-1"></i>
                 </span>
               </div>
@@ -172,7 +172,7 @@ async function addProductItemToCart(id) {
             <div className='flex justify-around'>
               <button className="btn" onClick={()=>{addProductItemToCart(productInfo.id)}}>Add to Cart</button>
 
-<div className='flex justify-center items-center cursor-pointer' onClick={() => toggleWishList(productInfo._id)}>
+<div className='flex justify-center items-center cursor-pointer' onClick={() => toggleWishList(productInfo?._id)}>
 {wishList?.find((el) => el._id === productInfo._id) ?
  <i className='fa fa-heart text-center flex justify-center items-center text-red-700 text-xl'></i> :
  <i className='fa-regular fa-heart text-center flex justify-center items-center text-red-700 text-xl'></i>}

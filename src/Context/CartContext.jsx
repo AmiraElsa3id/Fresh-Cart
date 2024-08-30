@@ -51,9 +51,19 @@ const [cartNum,setCartNum]=useState(0)
                 })
                 .catch((err)=>err)
                 }
+                async function clearCart()
+                {
+                    return axios.delete(`https://ecommerce.routemisr.com/api/v1/cart`,{
+                        headers
+                    }).then(()=>{
+                        setCartNum(0);
+                    })
+                    .catch((err)=>err)
+                }
+
     // const [cart, setCart] = useState([]);
     return(
-        <cartContext.Provider value={{addProductToCart,getProductToCart,updateProductInCart,removeProductInCart,cartNum}}>
+        <cartContext.Provider value={{addProductToCart,getProductToCart,updateProductInCart,removeProductInCart,cartNum,clearCart}}>
             {props.children}
         </cartContext.Provider>
     )

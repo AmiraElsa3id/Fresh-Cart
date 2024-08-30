@@ -2,11 +2,12 @@ import { useContext, useEffect, useState } from 'react'
 import { cartContext } from '../../Context/CartContext'
 import Loader from '../Loader/Loader';
 import toast from 'react-hot-toast';
+import BasicModal from './../BasicModal.jsx/BasicModal';
 
 
 export default function Carts() {
   let [cartProducts,setCartProducts] = useState(null)
-  let { getProductToCart ,updateProductInCart,removeProductInCart} = useContext(cartContext);
+  let { getProductToCart ,updateProductInCart,removeProductInCart,clearCart} = useContext(cartContext);
   const [isLoading, setLoading] = useState(true);
   async function getProductsCart() {
     try {
@@ -64,6 +65,19 @@ export default function Carts() {
       // let {data} =await removeProductInCart(id);
       // setCartProducts(data?.data)
       }
+      async function removeAllCartItems(){
+        toast.promise(
+          clearCart()
+        ,
+                {
+                    loading: 'Clearing Your Cart...',
+                    success: 'Cart Cleared successfully',
+                    error:  `Error: This didn't work`,
+                }
+            );
+    
+       
+      }
 
   useEffect(() => {
     getProductsCart();
@@ -72,10 +86,18 @@ export default function Carts() {
     <>{
       isLoading ?<Loader></Loader> 
        :<div className="relative overflow-x-auto shadow-md sm:rounded-lg mt-24 px-5  ">
-       <h1 className="text-center text-teal-600 text-3xl">Your Cart</h1>
+       <h1 className="text-center text-teal-600 text-3xl">Your Cart </h1>
        <h3 className="text-center text-xl pb-3">
-         Total Price: <span className="font-medium">{cartProducts?.totalCartPrice} $</span>
+         Total Price: <span className="font-medium">{cartProducts?.totalCartPrice} EGP</span>
        </h3>
+       <div>
+       <div className="flex items-center justify-center pt-2 flex-col w-full">
+                          {/* <button className="font-medium bg-teal-600 rounded-md text-white p-3 block hover:bg-teal-800 w-36 mt-2" onClick={() => { addProductItemToCart(item.id) }}>Check Out</button> */}
+                        <BasicModal cartId={cartProducts?._id}/>
+                          <button onClick={() => { removeAllCartItems() }} className="font-medium bg-red-600 rounded-md text-white p-3 block hover:bg-red-800 w-36 text-center">Clear Cart</button>
+                        
+                        </div>
+       </div>
        {cartProducts?.products?.length !== 0 ? (
          <>
            <table className="w-[80%] mx-auto text-sm text-left rtl:text-right text-gray-500 ">

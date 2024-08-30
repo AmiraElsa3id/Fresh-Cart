@@ -143,14 +143,14 @@ export default function Navbar() {
                 </ul>
               </nav>
 
-              <ul className="flex-col gap-x-2 text-[#0D9488] fixed right-0 top-40 items-between justify-center p-3 bg-[#F0F3F2] rounded-md text-xl">
-                <li className="flex items-center justify-center my-1 cursor-pointer hover:text-teal-800 transition-all duration-200">
+              <ul className="flex-col  text-[#0D9488] fixed right-0 top-40 items-between justify-center  px-3 py-2 bg-[#F0F3F2] rounded-md text-xl">
+                <li className="flex items-center justify-center my-3 cursor-pointer hover:text-teal-800 transition-all duration-200">
                   <i className="fab fa-facebook "></i>
                 </li>
-                <li className="flex items-center justify-center my-1 cursor-pointer hover:text-teal-800 transition-all duration-200">
+                <li className="flex items-center justify-center my-3 cursor-pointer hover:text-teal-800 transition-all duration-200">
                   <i className="fab fa-youtube "></i>
                 </li>
-                <li className="flex items-center justify-center my-1 cursor-pointer hover:text-teal-800 transition-all duration-200">
+                <li className="flex items-center justify-center my-3 cursor-pointer hover:text-teal-800 transition-all duration-200">
                   <i className="fab fa-instagram "></i>
                 </li>
               </ul>
