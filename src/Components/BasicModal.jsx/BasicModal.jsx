@@ -99,7 +99,7 @@ async function changeCart() {
     <div>
       <div className='flex gap-3'>
 
-      <Button variant='contained' sx={{backgroundColor:"#0D9488",width:"9rem",padding:"0.75rem",borderRadius:".375rem",my:'5px',transition:"ease",transitionDuration:"200ms",}}  onClick={()=>{handleOpen();setflag(!flag);}}>Pay Online</Button>
+      <Button variant='contained' sx={{backgroundColor:"#0D9488",width:"9rem",padding:"0.75rem",borderRadius:".375rem",my:'5px',transition:"ease",transitionDuration:"200ms",}}  onClick={()=>{handleOpen();setflag(true);}}>Pay Online</Button>
       <Button variant='contained' sx={{backgroundColor:"#0D9488",width:"9rem",padding:"0.75rem",borderRadius:".375rem",my:'5px',transition:"ease",transitionDuration:"200ms",}}  onClick={()=>{handleOpen();}}>Pay Cash</Button>
       </div>
       <Modal
