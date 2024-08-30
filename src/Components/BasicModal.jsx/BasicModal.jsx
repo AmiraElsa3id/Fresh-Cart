@@ -59,7 +59,7 @@ async function changeCart() {
         await removeCartProducts();
         setflag(false);
       }
-      navigate("/allorders")
+      
   //  console.log(data?.data?.session?.url);
     
   }
