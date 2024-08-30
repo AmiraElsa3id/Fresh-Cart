@@ -23,7 +23,7 @@ if(isError)
   return (
     <div className='row mx-auto w-[85%] mt-16 '>
 
-      {data?.map(ele=>{ return <div className=' md:w-1/5 p-3' key={ele?._id}><Link to={`subcategories/${ele?.name}`}>
+      {data?.map(ele=>{ return <div className=' w-full md:w-1/5 p-3' key={ele?._id}><Link to={`subcategories/${ele?.name}`}>
       <div className='  brand-card relative p-3 ' >
       <img src={ele?.image} alt="" className='w-full object-cover h-56' />
       <p className='brand-title'><span>{ele?.name}</span></p>
