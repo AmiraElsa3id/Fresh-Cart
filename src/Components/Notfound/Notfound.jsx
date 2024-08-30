@@ -1,6 +1,6 @@
 import NotFoundImg from "../../assets/imgs/404.webp";
 
-function NotFound() {
+export default function NotFound() {
   return (
     <section className="flex flex-col justify-center mt-24 items-center py-5">
       <img src={NotFoundImg} alt="404 Not Found" style={{ width: "80vw", maxWidth: "60rem" }} />
@@ -9,4 +9,3 @@ function NotFound() {
   );
 }
 
-export default NotFound;
