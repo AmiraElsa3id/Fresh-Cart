@@ -18,7 +18,7 @@ function Footer() {
           <input type="email" placeholder="Email" aria-label="Email" className=" form-control" />
         </div>
         <div className="w-full md:w-1/5 pe-2 pt-2 md:pt-0">
-          <button className="btn">Share App</button>
+          <button className="footer-btn w-full">Share App</button>
         </div>
         </form>
         <hr className="bg-[#9e9e9e] text-[#9e9e9e] font-medium" />

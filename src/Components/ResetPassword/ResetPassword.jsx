@@ -20,7 +20,7 @@ export default function ResetPassword() {
         toast.success("Password rest susseccfully",
           {
             duration: 4000,
-            position: 'bottom-right',}
+            position: 'top-center',}
         );
       navigate("/login");
       setLoading(false);

@@ -92,10 +92,7 @@ export default function Login() {
                 </div>
 
                 <div className="mt-6 flex items-center justify-between">
-                    <div className="flex items-center">
-                        <input id="remember_me" name="remember" type="checkbox" value="1" className="form-checkbox h-4 w-4 text-[#0D9488] accent-[#0D9488] transition duration-150 ease-in-out"/>
-                        <label htmlFor="remember_me" className="ml-2 block text-sm leading-5 text-gray-900">Remember me</label>
-                    </div>
+                    
 
                     <div className="text-sm leading-5">
                         <Link to={'/forgetpassword'}

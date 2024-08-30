@@ -19,6 +19,11 @@ import { Toaster } from 'react-hot-toast';
 import Home from './Components/Home/Home';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
+import CategoryPage from './Components/CategoryPage/CategoryPage';
+
+import  WishListContextProvider  from './Context/WishListContext';
+import WishList from './Components/WishList/WishList';
+
 
 function App() {
 let routes= createBrowserRouter([
@@ -26,7 +31,8 @@ let routes= createBrowserRouter([
     {index:true,element:<ProtectRoute><Products></Products></ProtectRoute>},
     {path:'/brands',element:<ProtectRoute><Brands></Brands></ProtectRoute>},
     {path:'/products',element:<ProtectRoute><Home></Home></ProtectRoute>},
-    {path:'/category',element:<ProtectRoute><Home></Home></ProtectRoute>},
+    {path:'/category',element:<ProtectRoute><CategoryPage></CategoryPage></ProtectRoute>},
+    {path:'/wishlist',element:<ProtectRoute><WishList></WishList></ProtectRoute>},
     {path:'/cart',element:<ProtectRoute><Carts></Carts></ProtectRoute>},
     {path:'/product-details/:id/:category',element:<ProtectRoute><ProductDetails></ProductDetails></ProtectRoute>},
     {path:'/register',element:<Register></Register>},
@@ -38,18 +44,23 @@ let routes= createBrowserRouter([
     
   ]}
 ])
+
 QueryClient
 const queryClient = new QueryClient({defaultOptions:{queries:{refetchOnWindowFocus:false}}})
 
   return (
     <>
     <QueryClientProvider  client={queryClient}>
+<WishListContextProvider>
       <CartContextProvider>
 <UserContextProvider>
+
       <RouterProvider router={routes}></RouterProvider>
       <Toaster/>
+    
    </UserContextProvider>
 </CartContextProvider>
+   </WishListContextProvider>
     </QueryClientProvider>
 
    

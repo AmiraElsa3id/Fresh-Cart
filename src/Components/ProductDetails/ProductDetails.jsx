@@ -17,22 +17,38 @@ export default function ProductDetails() {
 
   let {addProductToCart}=useContext(cartContext);
 async function addProductItemToCart(id) {
-  try {
-    const response = await addProductToCart(id);
-    console.log(response);
-    if(response.data.status=='success'){
-      toast.success(response.data.message,
-      {
-        duration: 4000,
-        position: 'bottom-right',}
-    );
-    }else{
-      toast.error(response.data.message)
-    }
-  }
-    catch{
-      console.log('Error')
-    }
+  // try {
+    // const response = await addProductToCart(id);
+    // console.log(response);
+    toast.promise(
+      addProductToCart(id),
+            {
+                loading: 'Adding product to your list...',
+                success: (response) => {
+                    if (response.data.status === "success") {
+                        return 'Product added successfully to your list.';
+                    } else {
+                        throw new Error("This didn't work.");
+                    }
+                },
+                error: () => `Error: This didn't work`,
+            }
+        );
+  //   if(response.data.status=='success'){
+      
+  //     toast.success(response.data.message,
+  //     {
+        
+  //       duration: 4000,
+  //       position: 'bottom-right',}
+  //   );
+  //   }else{
+  //     toast.error(response.data.message)
+  //   }
+  // }
+  //   catch{
+  //     console.log('Error')
+  //   }
   
 }
   function getProductDetails() {

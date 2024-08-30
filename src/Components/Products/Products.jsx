@@ -1,15 +1,20 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Loader from "../Loader/Loader";
 import { Link } from "react-router-dom";
 import CategorySlider from "../CategorySlider/CategorySlider";
 import MainSlider from './../MainSlider/MainSlider';
 import ProductItems from './../ProductItems/ProductItems';
 import Home from "../Home/Home";
+import { wishlistContext } from "../../Context/WishListContext";
 
 export default function Products() {
+
+
   const [product, setProduct] = useState([]);
   const [isLoading, setLoading] = useState(true);
+
+  
   function getProducts() {
     axios
       .get("https://ecommerce.routemisr.com/api/v1/products")
