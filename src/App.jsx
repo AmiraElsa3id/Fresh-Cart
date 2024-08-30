@@ -5,7 +5,7 @@ import Layout from './Components/Layout/Layout';
 import Login from './Components/Login/Login';
 import Brands from './Components/Brands/Brands';
 import Carts from './Components/Carts/Carts';
-import Notfound from './Components/notfound/notfound';
+import Notfound from './Components/Notfound/Notfound';
 import UserContextProvider from './Context/UserContext';
 import CartContextProvider from './Context/CartContext';
 import Register from './Components/Register/Register';
@@ -24,7 +24,7 @@ import CategoryPage from './Components/CategoryPage/CategoryPage';
 import  WishListContextProvider  from './Context/WishListContext';
 import WishList from './Components/WishList/WishList';
 
-
+Notfound
 function App() {
 let routes= createBrowserRouter([
   {path:'',element:<Layout></Layout>,children:[
