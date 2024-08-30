@@ -23,7 +23,7 @@ import CategoryPage from './Components/CategoryPage/CategoryPage';
 
 import  WishListContextProvider  from './Context/WishListContext';
 import WishList from './Components/WishList/WishList';
-import SubCategories from './Components/subCategories/SubCategories';
+import SubCategories from './Components/SubCategories/SubCategories';
 
 Notfound
 function App() {
