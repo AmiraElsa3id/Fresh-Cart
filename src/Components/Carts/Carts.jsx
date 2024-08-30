@@ -99,7 +99,7 @@ export default function Carts() {
                     <div className='md:text-xl'>
                     {item?.product?.title}
                     </div>
-                   <div className=" md:py-4 pt-5 font-semibold text-gray-900">{item?.price} $</div>
+                   <div className=" md:py-4 pt-5 font-semibold text-gray-900">{item?.price} EGP</div>
                    </td>
                    <td className="md:px-6 py-4">
                      <div className="flex items-center justify-center ">

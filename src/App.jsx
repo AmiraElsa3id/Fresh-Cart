@@ -23,6 +23,7 @@ import CategoryPage from './Components/CategoryPage/CategoryPage';
 
 import  WishListContextProvider  from './Context/WishListContext';
 import WishList from './Components/WishList/WishList';
+import SubCategories from './Components/subCategories/SubCategories';
 
 Notfound
 function App() {
@@ -32,6 +33,7 @@ let routes= createBrowserRouter([
     {path:'/brands',element:<ProtectRoute><Brands></Brands></ProtectRoute>},
     {path:'/products',element:<ProtectRoute><Home></Home></ProtectRoute>},
     {path:'/category',element:<ProtectRoute><CategoryPage></CategoryPage></ProtectRoute>},
+    {path:'/category/subcategories/:name',element:<ProtectRoute><SubCategories></SubCategories></ProtectRoute>},
     {path:'/wishlist',element:<ProtectRoute><WishList></WishList></ProtectRoute>},
     {path:'/cart',element:<ProtectRoute><Carts></Carts></ProtectRoute>},
     {path:'/product-details/:id/:category',element:<ProtectRoute><ProductDetails></ProductDetails></ProtectRoute>},

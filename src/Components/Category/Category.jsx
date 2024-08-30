@@ -65,7 +65,13 @@ export default function Category(props) {
               );
             })}
           </div>*/}
-         <ProductItems product={productCategoryList}></ProductItems></>
+         {
+          productCategoryList.length!=0?<ProductItems product={productCategoryList}></ProductItems>
+          :<div className="h-[90vh] flex justify-center items-center text-teal-500 text-xl">
+          No Products Found For This Category
+
+        </div>
+         }</>
         ) : (
           <Loader></Loader>
         )}
