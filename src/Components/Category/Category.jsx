@@ -1,12 +1,25 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom';
+
 import Loader from '../Loader/Loader';
 import ProductItems from './../ProductItems/ProductItems';
+import { useContext } from 'react';
+import { wishlistContext } from './../../Context/WishListContext';
 
 export default function Category(props) {
   const [isLoading, setLoading] = useState(true);
+  const { getProductWishlist, wishList, setWishlist } = useContext(wishlistContext);
 
+  async function getWishlist() {
+    try {
+      const { data } = await getProductWishlist();
+      setWishlist(data?.data || []);
+    } catch {
+      console.log('Error fetching wishlist');
+    } finally {
+      setLoading(false);
+    }
+  }
   let category = props.categoryName;
   const [productCategoryList, setProductCategoryList] = useState(null)
   function getRelatedCategory() {
@@ -26,6 +39,7 @@ export default function Category(props) {
 
   useEffect(() => {
     getRelatedCategory();
+    getWishlist();
   }, [])
   return (
     <>
@@ -66,8 +80,8 @@ export default function Category(props) {
             })}
           </div>*/}
          {
-          productCategoryList.length!=0?<ProductItems product={productCategoryList}></ProductItems>
-          :<div className="h-[90vh] flex justify-center items-center text-teal-500 text-xl">
+          productCategoryList?.length!=0?<ProductItems product={productCategoryList} wishList={wishList}></ProductItems>
+          :<div className="h-[90vh] flex justify-center items-center text-teal-700 text-xl">
           No Products Found For This Category
 
         </div>

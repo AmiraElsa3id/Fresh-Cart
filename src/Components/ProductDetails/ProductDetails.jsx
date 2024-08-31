@@ -148,7 +148,15 @@ export default function ProductDetails() {
               );
             })}
           </ul>
-          <button className="btn  md:hidden mt-2 mb-2 " onClick={() => { addProductItemToCart(details.id) }}>Add to Cart</button>
+          <div className='flex justify-between md:hidden mt-3'>
+              <button className="btn " onClick={() => { addProductItemToCart(details.id) }}>Add to Cart</button>
+
+              <div className='flex justify-center items-center cursor-pointer' onClick={() => toggleWishList(details._id)}>
+                {wishList?.find((el) => el._id === details.id) ?
+                  <i className='fa fa-heart text-center flex justify-center items-center text-red-700 text-xl'></i> :
+                  <i className='fa-regular fa-heart text-center flex justify-center items-center text-red-700 text-xl'></i>}
+              </div>
+            </div>
         </div>
         <div className="w-full md:w-2/4 flex flex-col justify-end md:justify-around md:h-80 ">
           <div>
@@ -166,8 +174,8 @@ export default function ProductDetails() {
                 <i className="fas fa-star text-yellow-500"></i>
               </span>
             </div>
-            <div className='flex justify-between'>
-              <button className="btn" onClick={() => { addProductItemToCart(details.id) }}>Add to Cart</button>
+            <div className='md:flex justify-between hidden '>
+              <button className="btn " onClick={() => { addProductItemToCart(details.id) }}>Add to Cart</button>
 
               <div className='flex justify-center items-center cursor-pointer' onClick={() => toggleWishList(details._id)}>
                 {wishList?.find((el) => el._id === details.id) ?

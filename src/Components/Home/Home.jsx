@@ -81,7 +81,7 @@ export default function Home() {
             filteredProductList.length > 0 ? (
               <ProductItems product={filteredProductList} wishList={wishList} />
             ) : (
-              <div className="h-screen flex justify-center items-center text-teal-500 text-xl">
+              <div className="h-screen flex justify-center items-center text-teal-700 text-xl">
                 No Products Found with this name
               </div>
             )

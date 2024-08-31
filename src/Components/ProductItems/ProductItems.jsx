@@ -142,7 +142,7 @@ async function addProductItemToCart(id) {
 
   return (
     <div className="row mx-auto">
-    {product.map((productInfo) => {
+    {product?.map((productInfo) => {
       // eslint-disable-next-line react/jsx-key
       return (
         <div className="w-[90%] md:w-1/4 lg:w-1/5 xl:w-1/6 mx-auto product mb-6 md:p-3 md:m-0  p-2 py-3 " key={productInfo?.id}>
