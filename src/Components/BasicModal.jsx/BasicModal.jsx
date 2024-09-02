@@ -11,7 +11,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import useMutationCart from './../../Hooks/useMutationCart';
 import { onlinePayment ,cash} from './../../Apis/payment';
 import { cartContext } from '../../Context/CartContext';
-
+import * as Yup from'yup';
 const style = {
   position: 'absolute' ,
   top: '50%',
@@ -24,6 +24,12 @@ const style = {
   boxShadow: 24,
   p: 4,
 };
+
+let validationSchema=Yup.object({
+  details:Yup.string(),
+  city:Yup.string(),
+  phone:Yup.string().required("Required").matches(/^01[1250][0-9]{8}/i,'Invalid Phone Number'),
+})
 
 export default function BasicModal({cartId}) {
   let [flag,setflag]=useState(false)
@@ -70,7 +76,7 @@ async function changeCart() {
         city: ""
      
     },
-    // validationSchema,
+    validationSchema,
     // validate: myValidation,
     onSubmit: handleSubmit
   });
