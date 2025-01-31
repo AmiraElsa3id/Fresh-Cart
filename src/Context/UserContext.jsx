@@ -10,7 +10,7 @@ export default function UserContextProvider(props){
             setLoggedin(token);
         }      
     }
-,[])
+,[loggedin])
 return(
     <userContext.Provider value={{loggedin,setLoggedin}}>
         {props.children}
