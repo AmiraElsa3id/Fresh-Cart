@@ -1,0 +1,13 @@
+
+import { Link, useParams } from 'react-router-dom'
+import Category from '../Category/Category';
+
+export default function SubCategories() {
+    let {name}=useParams();
+    console.log(name)
+  return (<>
+    <div className='mt-24 ms-10 bg-primary text-white w-fit p-3 rounded-md hover:bg-primary-dark transition-all duration-200'><Link to={'/category'} className='flex justify-center items-center gap-2'> <i className='fa fa-arrow-left'></i> go back to category list</Link></div>
+    <Category categoryName={name}></Category>
+  </>
+  )
+}
