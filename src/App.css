@@ -1,0 +1,4 @@
+/* App.css — minimal valid CSS to prevent Vite CSS plugin NaN error.
+ * Tailwind styles and base-nova tokens are in src/index.css.
+ * This file can contain app-specific overrides if needed.
+ */
