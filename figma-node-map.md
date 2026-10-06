@@ -50,6 +50,42 @@ layout has to be inferred from their Tablet/Mobile siblings.
 
 Foundation page (`54:25108`) holds a single frame `61:52` (1131×754) — the token scales.
 
+## Chrome — topbar and navbar
+
+Both are shared across every page, which is why a depth-limited read of a page frame
+does not surface them: they are separate layers, not children of the frame's content.
+Look them up by id.
+
+| Piece | Node | Notes |
+| --- | --- | --- |
+| Topbar | `16:4857` (`div.hidden`) | 40px, white, `#F3F4F6` bottom border. `div.flex` `16:4861` is `space-between`/`center`. |
+| Topbar left | `16:4863` → `16:4865`, `16:4875` | `gap: 24px`; each item `gap: 8px` with a 15×12 glyph and 14px Medium `#6A7282`. |
+| Topbar right | `16:4880` → `16:4881`, `16:4897` | `gap: 24px`; phone/mail links (`gap: 6px`, `#6A7282`), then a 1×16 `#E5E7EB` rule, then account (`gap: 16px`) in `#4A5565`. |
+| Navbar | `16:7255` (layer is named **"Slider"**) | 72px, white, `effect_c5bd7c6c`. |
+| Navbar logo | `16:7258` → `16:7261` | 165.16×32. |
+| Navbar search | `23:1470` → `16:7284` | `padding: 12px 48px 13px 20px`, fill `rgba(249,250,251,0.5)`, stroke `#E5E7EB`, **fully rounded**; the submit disc is `16:7289`, 36×36 `#16A34A`. |
+| Navbar links | `16:7292` | `gap: 24px`, 16px Medium `#364153`. Home, Shop, Categories, Brands — only Categories carries the 12.5×10 chevron (`16:7300`). |
+| Navbar support | `16:7305` → `16:7307`, `16:7310` | Two lines: "Support" 12px `#99A1AF` over "24/7 Help" 12px SemiBold `#364153`, beside a 40×40 `#F0FDF4` disc, with a `#E5E7EB` underline. |
+| Navbar actions | `16:7316`, `16:7320`, `16:7324` | Wishlist, cart, then the menu button (`padding: 10px`, fully rounded). |
+
+Cart and checkout reuse `38:3165` / `38:5630` for the topbar with identical internals.
+
+## Product listing with filters
+
+Two frames cover this screen and the app combines them: the green gradient banner
+comes from one, the facet sidebar from the other.
+
+| Piece | Node | Notes |
+| --- | --- | --- |
+| Listing frame (no sidebar) | `54:13500` | Gradient banner `54:13533` (`179deg`, `#16A34A` → `#22C55E` → `#4ADE80`), 5 × 281.59px cards. |
+| Listing frame (with sidebar) | `38:12457` | White hero instead, then the facet layout. |
+| Facet sidebar | `38:12515` (`aside.hidden`) | 256px. Card `38:12519`: 24px padding, `#F3F4F6` 1px, radius 16. |
+| Categories facet | `38:12521` → `38:12527`+ | h3 Bold + a 208px-tall scrolling list of 16×16 checkboxes (`radius 2.5`, stroke `#767676`) with 14px Medium `#4A5565` labels. |
+| Price facet | `38:12568` → `38:12571`, `38:12592` | Two labelled number inputs, then four `button.px-3` pills (`6px 12px`, `#F3F4F6`, fully rounded): Under 500 / 1K / 5K / 10K. |
+| Brands facet | `38:12602` → `38:12607`+ | Same checkbox pattern; Canon … LC Waikiki. |
+| Toolbar | `38:12668` | Results count left; "Sort by:" `#6A7282` plus `select.px-3` (`8px 28px 8px 16px`, `#E5E7EB`, radius 8) right. |
+| Mobile "Filters" button | `38:14724` | `padding: 8px 16px`, `gap: 8px`, white, `#E5E7EB` 1px, radius 8, 14px Medium `#364153`. |
+
 ## Assets
 
 Node id → what it is. Download with `download_figma_images`; all `IMAGE-SVG` nodes export

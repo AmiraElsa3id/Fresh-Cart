@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle, AlertCircle } from "lucide-react";
+import { emailField } from "@/lib/auth-schemas";
 
 const newsletterSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  email: emailField(),
 });
 
 type NewsletterFormData = z.infer<typeof newsletterSchema>;
@@ -84,6 +85,15 @@ export function Newsletter({ className, variant = "default" }: NewsletterProps) 
             {...register("email")}
             type="email"
             placeholder="Enter your email"
+            // A placeholder is not an accessible name - it disappears as soon as
+            // the field has content and is skipped by some screen readers. This
+            // form has no visible <label> (the design has none), so the name is
+            // set on the control itself.
+            aria-label={
+              variant === "footer"
+                ? "Email address to receive the app download link"
+                : "Email address to subscribe to the newsletter"
+            }
             className="flex-1"
             disabled={isSubmitting || status === "success"}
             aria-describedby={errors.email ? "email-error" : undefined}

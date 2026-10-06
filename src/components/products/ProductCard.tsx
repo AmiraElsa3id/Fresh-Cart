@@ -4,6 +4,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { effectivePrice, type Product } from "@/lib/types";
+import { slugOf } from "@/lib/slug";
 import { Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -32,7 +33,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
 
   return (
     <Link
-      to={`/product-details/${product._id}/${product.category?.slug ?? product.category?.name ?? ""}`}
+      to={`/product-details/${product._id}/${product.category ? slugOf(product.category) : ""}`}
       className="block h-full"
     >
       <Card className={cn("h-full flex flex-col transition-all hover:shadow-lg", className)}>
@@ -66,12 +67,12 @@ export function ProductCard({ product, className }: ProductCardProps) {
               <span className="text-sm text-gray-500">EGP</span>
             </div>
 
-            {product.ratingAverage != null && (
+            {product.ratingsAverage != null && (
               <div className="flex items-center gap-1 text-sm text-yellow-500">
                 <Star className="w-4 h-4 fill-current" />
-                <span>{product.ratingAverage.toFixed(1)}</span>
-                {product.ratingCount != null && (
-                  <span className="text-gray-400">({product.ratingCount})</span>
+                <span>{product.ratingsAverage.toFixed(1)}</span>
+                {product.ratingsQuantity != null && (
+                  <span className="text-gray-400">({product.ratingsQuantity})</span>
                 )}
               </div>
             )}
@@ -80,7 +81,9 @@ export function ProductCard({ product, className }: ProductCardProps) {
 
         <CardFooter className="p-4 pt-0">
           <Button
-            className="w-full"
+            // The default button is h-8 (32px). These cards stack one per row on
+            // phones, so this is a primary tap target and needs 44px.
+            className="h-11 w-full"
             disabled={isPending}
             onClick={(e) => {
               e.preventDefault();

@@ -1,22 +1,32 @@
 "use client";
 
-import { apiErrorMessage } from "@/lib/api";
+/** Verify reset code - Figma `54:22665` (Reset Verify Code - Desktop). Step 2 of 3. */
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Button } from "@/components/ui/button";
+import {
+  AuthAside,
+  AuthCard,
+  AuthLayout,
+  AuthStepper,
+  AuthSubmit,
+} from "@/components/auth/AuthLayout";
+import { AuthField, FormAlert } from "@/components/auth/AuthFields";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
-import { useVerifyResetCode } from "@/lib/hooks";
+import { apiErrorMessage } from "@/lib/api";
+import { useForgotPassword, useVerifyResetCode } from "@/lib/hooks";
+import { AUTH_CONTROL, readResetEmail } from "@/lib/auth-flow";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 const verifyResetCodeSchema = z.object({
-  resetCode: z.string().length(6, "Reset code must be 6 digits"),
+  resetCode: z
+    .string()
+    .length(6, "Reset code must be 6 digits")
+    .regex(/^\d+$/, "Reset code must be 6 digits"),
 });
 
 type VerifyResetCodeFormData = z.infer<typeof verifyResetCodeSchema>;
@@ -24,7 +34,12 @@ type VerifyResetCodeFormData = z.infer<typeof verifyResetCodeSchema>;
 export function VerifyResetCodePage() {
   const navigate = useNavigate();
   const { mutate: verifyResetCode, isPending } = useVerifyResetCode();
+  const { mutate: resend, isPending: isResending } = useForgotPassword();
   const [error, setError] = useState("");
+
+  // The design shows the address in the subtitle (54:22750) because the reset
+  // step has no email field either.
+  const email = readResetEmail();
 
   const {
     register,
@@ -32,6 +47,7 @@ export function VerifyResetCodePage() {
     formState: { errors },
   } = useForm<VerifyResetCodeFormData>({
     resolver: zodResolver(verifyResetCodeSchema),
+    defaultValues: { resetCode: "" },
   });
 
   const onSubmit = (data: VerifyResetCodeFormData) => {
@@ -41,62 +57,89 @@ export function VerifyResetCodePage() {
         toast.success("Code verified successfully!");
         navigate("/resetpassword");
       },
-      onError: (err) => {
-        setError(apiErrorMessage(err, "Invalid or expired code. Please try again."));
-      },
+      onError: (err) =>
+        setError(apiErrorMessage(err, "Invalid or expired code. Please try again.")),
+    });
+  };
+
+  const onResend = () => {
+    if (!email) {
+      navigate("/forgetpassword");
+      return;
+    }
+    setError("");
+    resend(email, {
+      onSuccess: () => toast.success("A new code is on its way."),
+      onError: (err) => setError(apiErrorMessage(err, "Could not resend the code. Try again.")),
     });
   };
 
   return (
-    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center py-12 px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-ink">Verify Reset Code</CardTitle>
-          <CardDescription className="text-slate-500">
-            Enter the 6-digit code sent to your email
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertCircle className="w-4 h-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="resetCode">Reset Code</Label>
+    <AuthLayout aside={<AuthAside variant="steps" activeStep={2} />}>
+      <AuthCard
+        title="Check Your Email"
+        subtitle={
+          email ? (
+            <>
+              Enter the 6-digit code sent to <span className="font-semibold text-ink">{email}</span>
+            </>
+          ) : (
+            "Enter the 6-digit code we emailed you"
+          )
+        }
+      >
+        <div className="flex flex-col gap-8">
+          <AuthStepper activeStep={2} />
+
+          {error && <FormAlert>{error}</FormAlert>}
+
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6" noValidate>
+            <AuthField
+              id="resetCode"
+              label="Verification Code"
+              error={errors.resetCode?.message}
+              action={
+                <button
+                  type="button"
+                  onClick={onResend}
+                  disabled={isResending}
+                  className="cursor-pointer text-sm font-semibold text-primary hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isResending ? "Sending..." : "Resend Code"}
+                </button>
+              }
+            >
               <Input
                 id="resetCode"
                 type="text"
-                placeholder="123456"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                placeholder="••••••"
                 maxLength={6}
-                {...register("resetCode")}
                 disabled={isPending}
-                className="text-center text-2xl tracking-widest font-mono"
                 aria-invalid={errors.resetCode ? "true" : "false"}
-                aria-describedby={errors.resetCode ? "resetcode-error" : undefined}
+                aria-describedby={errors.resetCode ? "resetCode-error" : undefined}
+                className={cn(
+                  AUTH_CONTROL.input,
+                  "text-center font-mono text-lg tracking-[0.5em] placeholder:tracking-[0.5em]"
+                )}
+                {...register("resetCode")}
               />
-              {errors.resetCode && (
-                <p id="resetcode-error" className="text-sm text-red-500 text-center" role="alert">
-                  {errors.resetCode.message}
-                </p>
-              )}
-            </div>
-            <Button type="submit" className="w-full" size="lg" disabled={isPending}>
-              {isPending ? "Verifying..." : "Verify Code"}
-            </Button>
+            </AuthField>
+
+            <AuthSubmit pending={isPending} pendingLabel="Verifying...">
+              Verify Code
+            </AuthSubmit>
+
+            <p className="text-center text-sm text-slate-500">
+              Wrong address?{" "}
+              <Link to="/forgetpassword" className="font-semibold text-primary hover:underline">
+                Change email address
+              </Link>
+            </p>
           </form>
-        </CardContent>
-        <CardFooter className="flex flex-col gap-4">
-          <p className="text-sm text-slate-500 text-center">
-            Didn't receive the code?{" "}
-            <Link to="/forgetpassword" className="text-primary hover:underline font-medium">
-              Resend Code
-            </Link>
-          </p>
-        </CardFooter>
-      </Card>
-    </div>
+        </div>
+      </AuthCard>
+    </AuthLayout>
   );
 }

@@ -1,16 +1,108 @@
 @import "tailwindcss";
 
+/*
+ * The `base-nova` style this project is on ships its variants and utilities in
+ * `shadcn/tailwind.css`, and `components.json` -> `style: base-nova` expects this
+ * import. Without it `data-horizontal:` / `data-vertical:` fell back to Tailwind's
+ * plain attribute-shorthand, compiling to `[data-horizontal]`, which Base UI never
+ * emits - it sets `data-orientation="horizontal"`. So every orientation utility in
+ * the registry components was silently dead: the Tabs root lost `flex-col` (the tab
+ * list and the panel sat side by side and overflowed the page by 44px), and
+ * ScrollArea / Separator lost their orientation rules too.
+ */
+@import "shadcn/tailwind.css";
+
+/*
+ * Design tokens for Figma file 7GOjynvDWj2Lnbb4IKjbXK.
+ *
+ * Two groups live here on purpose:
+ *
+ * 1. Brand colours lifted from the design.
+ * 2. The shadcn semantic layer. These were previously missing, which meant every
+ *    `bg-muted`, `text-muted-foreground`, `border-input` and `ring-ring` class in
+ *    src/components/ui resolved against a token that did not exist, so Tailwind
+ *    emitted no rule for it at all. Inputs, checkboxes, selects and cards were
+ *    rendering with no border colour whatsoever - that is why the borders looked
+ *    like they had no contrast.
+ *
+ * Border roles are deliberately split:
+ *   --color-input   control boundaries (input, select, checkbox, tabs, outline
+ *                   buttons). #7D8798 is the lightest neutral that clears the
+ *                   3:1 non-text contrast of WCAG 1.4.11 against white (3.63:1),
+ *                   surface (#F9FAFB, 3.47:1) and the muted fill (#F3F4F6, 3.30:1).
+ *   --color-border  structural hairlines (card edges, separators, scrollbars).
+ *                   The design's own #E5E7EB is 1.24:1 on white - fine for a
+ *                   divider, not fine for a field boundary, hence the split.
+ */
 @theme {
-  --color-primary: #16A34A;
+  /* brand */
+  --color-primary: #16a34a; /* "Salem" - buttons, active states */
   --color-primary-dark: #009966;
-  --color-ink: #1E2939;
-  --color-slate-500: #6A7282;
-  --color-surface: #F9FAFB;
-  --color-surface-2: #F3F4F6;
+  --color-ink: #1e2939;
+  --color-slate-500: #6a7282;
+  --color-surface: #f9fafb;
+  --color-surface-2: #f3f4f6;
   --font-sans: 'Exo', sans-serif;
+
+  /* shadcn semantic layer */
+  --color-background: #ffffff;
+  --color-foreground: #1e2939;
+  --color-card: #ffffff;
+  --color-card-foreground: #1e2939;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #1e2939;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f3f4f6;
+  --color-secondary-foreground: #1e2939;
+  --color-muted: #f3f4f6;
+  --color-muted-foreground: #4a5565; /* 7.56:1 on white */
+  --color-accent: #dcfce7;
+  --color-accent-foreground: #15803d;
+  --color-destructive: #fb2c36; /* the design's discount red, not a stock red */
+  --color-destructive-foreground: #ffffff;
+  --color-border: #d5dae1;
+  --color-input: #7d8798;
+  --color-ring: #16a34a;
 }
 
+:root {
+  --font-family: 'Exo', sans-serif;
+
+  /*
+   * Aliases the components reach for directly by name in `var()`, so they are
+   * declared here rather than in @theme: putting them in @theme would also mint
+   * (and override) the matching `rounded-*` utilities.
+   */
+  --foreground: var(--color-foreground);
+  --secondary: var(--color-secondary);
+}
+
+/*
+ * The app is light-only, but shadcn's primitives carry `dark:` utilities and
+ * Tailwind's default `dark:` variant keys off prefers-color-scheme. On a
+ * machine set to dark that silently overrode light values - most visibly
+ * `dark:bg-input/30` on every Input, which greyed out the auth field backgrounds
+ * and the navbar search box.
+ *
+ * Scoping the variant to an explicit `.dark` class means those rules exist but
+ * never match, since nothing in the app sets that class.
+ *
+ * Declared after the shadcn import so it wins over anything it defines.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer utilities {
+  /*
+   * The design's content column is 1536px at a 1920px frame (home `div.container`
+   * #16:4955 sits at x=192, width=1536; the product page's `div.hidden` #24:2341
+   * uses `padding: 0 208px`, which is the same 1504px of content after the
+   * container's own 16px). Tailwind's default `container` caps at 1280px from the
+   * `xl` breakpoint up, which made every page ~250px narrower than the design.
+   */
+  .container {
+    max-width: 1536px;
+  }
+
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -36,10 +128,6 @@
       transform: translateY(0);
     }
   }
-}
-
-:root {
-  --font-family: 'Exo', sans-serif;
 }
 
 body {

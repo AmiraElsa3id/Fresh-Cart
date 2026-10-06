@@ -65,6 +65,22 @@ const protectedRoute = (Page: ComponentType) => (
   </ProtectRoute>
 );
 
+/**
+ * The two legal documents are one component parameterised by `doc`. Wrapping it
+ * in a forwardRef component per route keeps the route table declarative and
+ * keeps the copy out of the entry chunk.
+ */
+function legalRoute(doc: "terms" | "privacy" | "cookies") {
+  return lazy(async () => {
+    const { LegalPage } = await import("@/components/legal/LegalPage");
+    return { default: () => <LegalPage doc={doc} /> };
+  });
+}
+
+const TermsPage = legalRoute("terms");
+const PrivacyPolicyPage = legalRoute("privacy");
+const CookiePolicyPage = legalRoute("cookies");
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -75,7 +91,10 @@ export const router = createBrowserRouter([
       { path: "product-details/:id/:category", element: <ProductDetailsPage /> },
       { path: "brands", element: <BrandsPage /> },
       { path: "category", element: <CategoriesPage /> },
-      { path: "category/subcategories/:name", element: <SubCategoriesPage /> },
+      // Splat, not named params: react-router fills named segments positionally, so
+      // `:slug/:parentSlug?` assigned "women's-fashion" to the subcategory slot and
+      // "handbags" to the parent slot. The path is read and split by the page.
+      { path: "category/subcategories/*", element: <SubCategoriesPage /> },
 
       { path: "cart", element: protectedRoute(CartPage) },
       { path: "wishlist", element: protectedRoute(WishlistPage) },
@@ -88,6 +107,12 @@ export const router = createBrowserRouter([
       { path: "forgetpassword", element: <ForgotPasswordPage /> },
       { path: "verifyresetcode", element: <VerifyResetCodePage /> },
       { path: "resetpassword", element: <ResetPasswordPage /> },
+
+      // The signup terms checkbox (24:5172) gates on these, and siteConfig.footerLinks
+      // already points at these exact paths.
+      { path: "terms", element: <TermsPage /> },
+      { path: "privacy", element: <PrivacyPolicyPage /> },
+      { path: "cookies", element: <CookiePolicyPage /> },
     ],
   },
   {

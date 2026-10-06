@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import useEmblaCarouselAutoplay from "embla-carousel-autoplay";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -42,22 +43,64 @@ const slides: HeroSlide[] = [
 ];
 
 export function HeroSlider() {
+  /*
+   * `align` must stay "start". With full-width slides (`flex-[0_0_100%]`) the slide
+   * size equals the container size, and embla's centring offset is
+   * `(containerSize - slideSize) / 2` - which is 0 for every slide. "center"
+   * therefore produces a snap list of [0, 0]: scrollNext, the dot buttons, dragging
+   * and autoplay all resolve to the same offset and the banner never moves.
+   */
   const [emblaRef, emblaApi] = useEmblaCarousel(
-    { loop: true, align: "center", slidesToScroll: 1 },
+    { loop: true, align: "start", slidesToScroll: 1 },
     [useEmblaCarouselAutoplay({ delay: 5000, stopOnInteraction: true, stopOnMouseEnter: true })]
   );
 
+  /*
+   * `emblaApi.selectedScrollSnap()` read during render does not update on its
+   * own: embla-carousel-react 8.6 only re-renders when the API instance itself
+   * changes, not when the selected snap changes. Reading it directly left the
+   * active bullet frozen on slide 1 even though the carousel moved. So the
+   * index is held in state and driven by embla's `select` event.
+   */
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [snapCount, setSnapCount] = useState(slides.length);
+
+  const onSelect = useCallback(() => {
+    setSelectedIndex(emblaApi?.selectedScrollSnap() ?? 0);
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    onSelect();
+    setSnapCount(emblaApi.scrollSnapList().length);
+    emblaApi.on("select", onSelect);
+    emblaApi.on("reInit", onSelect);
+    return () => {
+      emblaApi.off("select", onSelect);
+      emblaApi.off("reInit", onSelect);
+    };
+  }, [emblaApi, onSelect]);
+
   const scrollPrev = () => emblaApi?.scrollPrev();
   const scrollNext = () => emblaApi?.scrollNext();
-  const selectedIndex = emblaApi?.selectedScrollSnap() ?? 0;
-  const scrollSnaps = emblaApi?.scrollSnapList() ?? [];
 
   return (
     <section className="relative w-full overflow-hidden" role="region" aria-label="Hero carousel">
       <div className="relative" ref={emblaRef}>
         <div className="flex">
-          {slides.map((slide) => (
-            <div key={slide.id} className="flex-[0_0_100%] min-w-0">
+          {slides.map((slide, index) => (
+            <div
+              key={slide.id}
+              className="flex-[0_0_100%] min-w-0"
+              /*
+               * Both slides carry an <h1>, which would give the page two
+               * top-level headings and read both out in sequence. The slide
+               * that is not on screen is hidden from assistive tech instead -
+               * embla keeps every slide mounted and translated off-screen, so
+               * without this the off-screen copy is still reachable.
+               */
+              aria-hidden={index !== selectedIndex}
+            >
               <div className="relative h-[400px] w-full overflow-hidden">
                 <img
                   src={HERO_IMAGE}
@@ -77,9 +120,11 @@ export function HeroSlider() {
                       </h1>
                       <p className="mb-6 text-base text-white/90 md:text-lg">{slide.subtitle}</p>
                       <div className="flex flex-wrap gap-3">
+                        {/* `size="lg"` is h-9 (36px); these are the page's
+                            primary actions and need a 44px touch target. */}
                         <Button
                           size="lg"
-                          className="border-2 border-white/50 bg-white font-semibold text-[#00C950] hover:bg-white/90"
+                          className="h-11 border-2 border-white/50 bg-white font-semibold text-[#00C950] hover:bg-white/90"
                           nativeButton={false}
                           render={<Link to={slide.primaryCta.href} />}
                         >
@@ -88,7 +133,7 @@ export function HeroSlider() {
                         <Button
                           size="lg"
                           variant="outline"
-                          className="border-2 border-white/50 bg-transparent font-semibold text-white hover:bg-white/10 hover:text-white"
+                          className="h-11 border-2 border-white/50 bg-transparent font-semibold text-white hover:bg-white/10 hover:text-white"
                           nativeButton={false}
                           render={<Link to={slide.secondaryCta.href} />}
                         >
@@ -125,19 +170,35 @@ export function HeroSlider() {
         <ChevronRight className="h-6 w-6 text-ink" />
       </button>
 
-      <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 gap-2" role="tablist">
-        {scrollSnaps.map((_, index) => (
+      {/* Design `div.swiper-pagination`: 8px gaps, active bullet 32x12 and
+          inactive 12x12, all fully rounded, ~16px above the bottom edge. */}
+      <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2" role="tablist">
+        {Array.from({ length: snapCount }, (_, index) => (
           <button
             key={index}
             onClick={() => emblaApi?.scrollTo(index)}
+            /* The bullet is only 12px tall, well under the 44px touch target.
+               Making the button 44px tall would leave 16px between the bullets
+               instead of the design's 8px, so the button keeps the bullet's own
+               12px height and an invisible ::before widens the hit area
+               vertically without disturbing the horizontal layout. */
             className={cn(
-              "h-2.5 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary",
-              index === selectedIndex ? "w-8 bg-white" : "w-2.5 bg-white/50 hover:bg-white/75"
+              "relative flex h-3 items-center justify-center rounded-full",
+              "before:absolute before:inset-x-0 before:top-1/2 before:h-11 before:-translate-y-1/2 before:content-['']",
+              "focus-visible:ring-2 focus-visible:ring-primary focus:outline-none"
             )}
             role="tab"
             aria-selected={index === selectedIndex}
             aria-label={`Go to slide ${index + 1}`}
-          />
+          >
+            <span
+              aria-hidden="true"
+              className={cn(
+                "block h-3 rounded-full transition-all duration-300",
+                index === selectedIndex ? "w-8 bg-white" : "w-3 bg-white/50"
+              )}
+            />
+          </button>
         ))}
       </div>
     </section>

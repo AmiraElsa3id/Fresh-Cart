@@ -1,22 +1,31 @@
 "use client";
 
-import { apiErrorMessage } from "@/lib/api";
+/** Forgot password - Figma `54:20254` (Forgot Password Page - Desktop). Step 1 of 3. */
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Button } from "@/components/ui/button";
+import { Mail } from "lucide-react";
+import {
+  AuthAside,
+  AuthCard,
+  AuthCardFooter,
+  AuthLayout,
+  AuthStepper,
+  AuthSubmit,
+} from "@/components/auth/AuthLayout";
+import { AuthField, FormAlert } from "@/components/auth/AuthFields";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, CheckCircle } from "lucide-react";
+import { apiErrorMessage } from "@/lib/api";
 import { useForgotPassword } from "@/lib/hooks";
+import { AUTH_CONTROL, writeResetEmail } from "@/lib/auth-flow";
+import { emailField } from "@/lib/auth-schemas";
 import { toast } from "sonner";
 
 const forgotPasswordSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  email: emailField(),
 });
 
 type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
@@ -24,7 +33,6 @@ type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 export function ForgotPasswordPage() {
   const navigate = useNavigate();
   const { mutate: forgotPassword, isPending } = useForgotPassword();
-  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [error, setError] = useState("");
 
   const {
@@ -33,93 +41,60 @@ export function ForgotPasswordPage() {
     formState: { errors },
   } = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: { email: "" },
   });
 
   const onSubmit = (data: ForgotPasswordFormData) => {
     setError("");
-    setStatus("idle");
     forgotPassword(data.email, {
       onSuccess: () => {
-        setStatus("success");
+        // Carry the address forward: the verify and reset screens have no
+        // email field, per the design.
+        writeResetEmail(data.email);
         toast.success("Reset code sent to your email!");
-        setTimeout(() => navigate("/verifyresetcode"), 3000);
+        navigate("/verifyresetcode");
       },
-      onError: (err) => {
-        setStatus("error");
-        setError(apiErrorMessage(err, "Failed to send reset code. Please try again."));
-      },
+      onError: (err) =>
+        setError(apiErrorMessage(err, "Failed to send reset code. Please try again.")),
     });
   };
 
-  if (status === "success") {
-    return (
-      <div className="min-h-[calc(100vh-200px)] flex items-center justify-center py-12 px-4">
-        <Card className="w-full max-w-md text-center">
-          <CardContent className="pt-6">
-            <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-8 h-8 text-green-600" />
-            </div>
-            <CardTitle className="text-2xl font-bold text-ink mb-2">Code Sent!</CardTitle>
-            <CardDescription className="text-slate-500 mb-6">
-              We've sent a password reset code to your email. Redirecting to verification...
-            </CardDescription>
-            <Button variant="outline" onClick={() => navigate("/verifyresetcode")}>
-              Go to Verification
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center py-12 px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-ink">Forgot Password?</CardTitle>
-          <CardDescription className="text-slate-500">
-            Enter your email and we'll send you a reset code
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {error && status === "error" && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertCircle className="w-4 h-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+    <AuthLayout aside={<AuthAside variant="steps" activeStep={1} />}>
+      <AuthCard title="Forgot Password?" subtitle="No worries, we'll send you a reset code">
+        <div className="flex flex-col gap-8">
+          <AuthStepper activeStep={1} />
+
+          {error && <FormAlert>{error}</FormAlert>}
+
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6" noValidate>
+            <AuthField id="email" label="Email Address" icon={Mail} error={errors.email?.message}>
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
-                {...register("email")}
+                placeholder="Enter your email address"
+                autoComplete="email"
                 disabled={isPending}
                 aria-invalid={errors.email ? "true" : "false"}
                 aria-describedby={errors.email ? "email-error" : undefined}
+                className={AUTH_CONTROL.input}
+                {...register("email")}
               />
-              {errors.email && (
-                <p id="email-error" className="text-sm text-red-500" role="alert">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
-            <Button type="submit" className="w-full" size="lg" disabled={isPending}>
-              {isPending ? "Sending code..." : "Send Reset Code"}
-            </Button>
+            </AuthField>
+
+            <AuthSubmit pending={isPending} pendingLabel="Sending code...">
+              Send Reset Code
+            </AuthSubmit>
           </form>
-        </CardContent>
-        <CardFooter className="flex flex-col gap-4">
-          <p className="text-sm text-slate-500 text-center">
+
+          <AuthCardFooter>
             Remember your password?{" "}
-            <Link to="/login" className="text-primary hover:underline font-medium">
+            <Link to="/login" className="font-semibold text-primary hover:underline">
               Sign In
             </Link>
-          </p>
-        </CardFooter>
-      </Card>
-    </div>
+          </AuthCardFooter>
+        </div>
+      </AuthCard>
+    </AuthLayout>
   );
 }

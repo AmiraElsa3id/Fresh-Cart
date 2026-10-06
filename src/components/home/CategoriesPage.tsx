@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useCategories } from "@/lib/hooks";
 import { CategoryCard } from "./CategoryCard";
 
@@ -8,9 +9,14 @@ export function CategoriesPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <nav className="flex items-center gap-2 text-sm text-slate-500 mb-4" aria-label="Breadcrumb">
-          <span className="hover:text-primary transition-colors">Home</span>
-          <span>/</span>
-          <span className="text-ink font-medium">Categories</span>
+          {/* Was a bare <span>, so "Home" looked like a link but did nothing. */}
+          <Link to="/" className="hover:text-primary transition-colors">
+            Home
+          </Link>
+          <span aria-hidden="true">/</span>
+          <span className="text-ink font-medium" aria-current="page">
+            Categories
+          </span>
         </nav>
         <h1 className="text-3xl font-bold text-ink">All Categories</h1>
         <p className="text-slate-500 mt-1">{categories?.length || 0} categories available</p>

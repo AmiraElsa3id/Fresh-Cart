@@ -1,32 +1,62 @@
 "use client";
 
+/** Sign up - Figma `24:4988` (Sign up Page - Desktop). */
+
 import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Button } from "@/components/ui/button";
+import { Lock, Mail, Phone, User } from "lucide-react";
+import {
+  AuthAside,
+  AuthCard,
+  AuthCardFooter,
+  AuthDivider,
+  AuthLayout,
+  AuthSubmit,
+  SocialAuthButtons,
+} from "@/components/auth/AuthLayout";
+import { AuthField, AuthPasswordField, FormAlert, PasswordStrength } from "@/components/auth/AuthFields";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { apiErrorMessage } from "@/lib/api";
 import { useSignUp } from "@/lib/hooks";
 import { useAuthStore } from "@/lib/store";
+import { AUTH_CONTROL } from "@/lib/auth-flow";
+import {
+  PASSWORD_HINT,
+  emailField,
+  passwordField,
+  phoneField,
+  refinePasswordMatch,
+} from "@/lib/auth-schemas";
 import { toast } from "sonner";
 
-const registerSchema = z
-  .object({
-    name: z.string().min(2, "Name must be at least 2 characters"),
-    email: z.string().email("Please enter a valid email address"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
-    rePassword: z.string(),
-    phone: z.string().regex(/^01[0-9]{9}$/, "Please enter a valid Egyptian phone number"),
-  })
-  .refine((data) => data.password === data.rePassword, {
-    message: "Passwords don't match",
-    path: ["rePassword"],
-  });
+/**
+ * The design's hint at 24:5154 reads "Must be at least 8 characters with numbers
+ * and symbols", which is what `PASSWORD_POLICY` now enforces. Phone stays
+ * Egyptian because that is what the API validates - the design's
+ * `+1 234 567 8900` placeholder would be rejected.
+ */
+const registerSchema = refinePasswordMatch(
+  {
+    name: z.string().trim().min(2, "Name must be at least 2 characters"),
+    email: emailField(),
+    password: passwordField(),
+    rePassword: z.string().trim().min(1, "Please confirm your password"),
+    phone: phoneField(),
+    // Not `z.literal(true, { message })`: Zod 3's ZodLiteral._parse emits its own
+    // `invalid_literal` issue and never reads the custom message, so the user
+    // would see "Invalid literal value, expected true". `refine` does read it.
+    terms: z
+      .boolean({ invalid_type_error: "Please accept the terms to continue" })
+      .refine((accepted) => accepted, { message: "You must accept the terms to continue" }),
+  },
+  "password",
+  "rePassword",
+);
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
@@ -38,147 +68,201 @@ export function RegisterPage() {
 
   const {
     register,
+    control,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
+    mode: "onTouched",
+    defaultValues: { name: "", email: "", password: "", rePassword: "", phone: "", terms: false as never },
   });
+
+  const password = watch("password");
 
   const onSubmit = (data: RegisterFormData) => {
     setError("");
-    signUp(data, {
-      onSuccess: (response) => {
-        if (response.data?.token) {
-          login(
-            response.data.token,
-            response.data.user || { id: "", name: data.name, email: data.email, role: "user" }
-          );
-          toast.success("Account created successfully!");
-          navigate("/");
-        } else {
-          setError(response.data?.message || "Registration failed. Please try again.");
-        }
+    signUp(
+      {
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        rePassword: data.rePassword,
+        phone: data.phone,
       },
-      onError: () => {
-        setError("An error occurred. Please try again.");
-      },
-    });
+      {
+        onSuccess: (response) => {
+          /*
+           * The hook's `mutationFn` already unwraps the axios envelope
+           * (`const { data } = await api.post(...)`), and the API puts `token`,
+           * `user` and `message` at the top level of that body. Reading
+           * `response.data.token` looked one level too deep, was always undefined,
+           * and made a successful sign-up report "Registration failed" even
+           * though the account had been created.
+           */
+          if (response.token) {
+            login(
+              response.token,
+              response.user ?? { id: "", name: data.name, email: data.email, role: "user" }
+            );
+            toast.success("Account created successfully!");
+            navigate("/");
+          } else {
+            setError(response.message || "Registration failed. Please try again.");
+          }
+        },
+        onError: (err) =>
+          setError(apiErrorMessage(err, "An error occurred. Please try again.")),
+      }
+    );
   };
 
   return (
-    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center py-12 px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-ink">Create Account</CardTitle>
-          <CardDescription className="text-slate-500">Join FreshCart today</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertCircle className="w-4 h-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+    <AuthLayout aside={<AuthAside variant="features" />}>
+      <AuthCard
+        title="Create Your Account"
+        subtitle="Start your fresh journey with us today"
+        showBrand={false}
+        titleAs="h2"
+      >
+        <div className="flex flex-col gap-8">
+          <SocialAuthButtons action="Sign up with" className="rounded-lg" />
+          <AuthDivider label="or" />
+
+          {error && <FormAlert>{error}</FormAlert>}
+
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-7" noValidate>
+            <AuthField id="name" label="Name*" icon={User} error={errors.name?.message}>
               <Input
                 id="name"
                 type="text"
                 placeholder="John Doe"
-                {...register("name")}
+                autoComplete="name"
                 disabled={isPending}
                 aria-invalid={errors.name ? "true" : "false"}
                 aria-describedby={errors.name ? "name-error" : undefined}
+                className={AUTH_CONTROL.input}
+                {...register("name")}
               />
-              {errors.name && (
-                <p id="name-error" className="text-sm text-red-500" role="alert">
-                  {errors.name.message}
-                </p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+            </AuthField>
+
+            <AuthField id="email" label="Email*" icon={Mail} error={errors.email?.message}>
               <Input
                 id="email"
                 type="email"
                 placeholder="you@example.com"
-                {...register("email")}
+                autoComplete="email"
                 disabled={isPending}
                 aria-invalid={errors.email ? "true" : "false"}
                 aria-describedby={errors.email ? "email-error" : undefined}
+                className={AUTH_CONTROL.input}
+                {...register("email")}
               />
-              {errors.email && (
-                <p id="email-error" className="text-sm text-red-500" role="alert">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
+            </AuthField>
+
+            <AuthPasswordField
+              id="password"
+              label="Password*"
+              icon={Lock}
+              error={errors.password?.message}
+              placeholder="Create a strong password"
+              inputProps={{
+                autoComplete: "new-password",
+                disabled: isPending,
+                ...register("password"),
+              }}
+              footer={
+                <PasswordStrength value={password ?? ""} hint={PASSWORD_HINT} />
+              }
+            />
+
+            <AuthPasswordField
+              id="rePassword"
+              label="Confirm Password*"
+              icon={Lock}
+              error={errors.rePassword?.message}
+              placeholder="Confirm your password"
+              inputProps={{
+                autoComplete: "new-password",
+                disabled: isPending,
+                ...register("rePassword"),
+              }}
+            />
+
+            <AuthField id="phone" label="Phone Number*" icon={Phone} error={errors.phone?.message}>
               <Input
                 id="phone"
                 type="tel"
                 placeholder="01XXXXXXXXX"
-                {...register("phone")}
+                autoComplete="tel"
+                inputMode="tel"
                 disabled={isPending}
                 aria-invalid={errors.phone ? "true" : "false"}
                 aria-describedby={errors.phone ? "phone-error" : undefined}
+                className={AUTH_CONTROL.input}
+                {...register("phone")}
               />
-              {errors.phone && (
-                <p id="phone-error" className="text-sm text-red-500" role="alert">
-                  {errors.phone.message}
+            </AuthField>
+
+            {/* 24:5167 - terms checkbox */}
+            <div>
+              <div className="flex items-start gap-2">
+                <Controller
+                  control={control}
+                  name="terms"
+                  render={({ field }) => (
+                    <Checkbox
+                      id="terms"
+                      checked={field.value === true}
+                      onCheckedChange={field.onChange}
+                      onBlur={field.onBlur}
+                      ref={field.ref}
+                      disabled={isPending}
+                      aria-invalid={errors.terms ? "true" : "false"}
+                      aria-describedby={errors.terms ? "terms-error" : undefined}
+                      className="mt-0.5"
+                    />
+                  )}
+                />
+                <Label htmlFor="terms" className="text-sm leading-5 font-normal text-[#4A5565]">
+                  I agree to the{" "}
+                  <Link to="/terms" className="font-semibold text-primary hover:underline">
+                    Terms of Service
+                  </Link>{" "}
+                  and{" "}
+                  <Link
+                    to="/privacy"
+                    className="font-semibold text-primary hover:underline"
+                  >
+                    Privacy Policy
+                  </Link>{" "}
+                  <span aria-hidden="true">*</span>
+                </Label>
+              </div>
+              {errors.terms && (
+                <p id="terms-error" role="alert" className="mt-1.5 text-sm text-red-500">
+                  {errors.terms.message}
                 </p>
               )}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                {...register("password")}
-                disabled={isPending}
-                aria-invalid={errors.password ? "true" : "false"}
-                aria-describedby={errors.password ? "password-error" : undefined}
-              />
-              {errors.password && (
-                <p id="password-error" className="text-sm text-red-500" role="alert">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="rePassword">Confirm Password</Label>
-              <Input
-                id="rePassword"
-                type="password"
-                placeholder="••••••••"
-                {...register("rePassword")}
-                disabled={isPending}
-                aria-invalid={errors.rePassword ? "true" : "false"}
-                aria-describedby={errors.rePassword ? "repassword-error" : undefined}
-              />
-              {errors.rePassword && (
-                <p id="repassword-error" className="text-sm text-red-500" role="alert">
-                  {errors.rePassword.message}
-                </p>
-              )}
-            </div>
-            <Button type="submit" className="w-full" size="lg" disabled={isPending}>
-              {isPending ? "Creating account..." : "Create Account"}
-            </Button>
+
+            <AuthSubmit
+              pending={isPending}
+              pendingLabel="Creating account..."
+              className="rounded-lg"
+            >
+              Create My Account
+            </AuthSubmit>
           </form>
-        </CardContent>
-        <CardFooter className="flex flex-col gap-4">
-          <p className="text-sm text-slate-500 text-center">
+
+          <AuthCardFooter>
             Already have an account?{" "}
-            <Link to="/login" className="text-primary hover:underline font-medium">
+            <Link to="/login" className="font-semibold text-primary hover:underline">
               Sign In
             </Link>
-          </p>
-        </CardFooter>
-      </Card>
-    </div>
+          </AuthCardFooter>
+        </div>
+      </AuthCard>
+    </AuthLayout>
   );
 }

@@ -10,7 +10,18 @@ export function useCart() {
     queryKey: ["cart"],
     queryFn: async () => {
       const { data } = await api.get(`${API_V2}/cart`);
-      return data.data;
+      /*
+       * The v2 cart response is `{ cartId, numOfCartItems, data: <the cart> }`:
+       * `cartId` sits beside `data`, not inside it, and the cart document's own
+       * identifier is `_id`. Reading `data.data.cartId` gave undefined, which
+       * made `POST /orders/${cartId}` fail with "invalid ID undefined" and left
+       * "Place Order" doing nothing at all. Prefer the top-level id and fall back
+       * to the document's own.
+       */
+      return {
+        ...data.data,
+        cartId: data.cartId ?? data.data?._id ?? "",
+      };
     },
     // The endpoint is token-scoped, so a logged-out visitor would only ever get
     // a 401. Layout mounts this for the header badge, which every visitor sees.
@@ -60,7 +71,9 @@ export function useRemoveFromCart() {
 
 export function useClearCart() {
   const queryClient = useQueryClient();
-  return useMutation({
+  // Explicit generics: untyped `useMutation` defaults the variables to `void`,
+  // which makes `clearCart({ onError })` a type error and silently unreportable.
+  return useMutation<unknown, Error, void>({
     mutationFn: async () => {
       const { data } = await api.delete(`${API_V2}/cart`);
       return data;

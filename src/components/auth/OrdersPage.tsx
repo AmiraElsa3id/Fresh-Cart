@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { cartLineTotal } from "@/lib/types";
 import { Package, Truck, CheckCircle, Clock, XCircle, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -110,7 +111,10 @@ export function OrdersPage() {
                               <p className="text-sm font-medium line-clamp-1">{item.product?.title}</p>
                               <p className="text-xs text-slate-500">Qty: {item.count}</p>
                               <p className="text-sm text-primary font-medium">
-                                {(item.product?.priceAfterDiscount || item.product?.price) * item.count} EGP
+                                {/* `cartLineTotal`, not `product.price`: the order's
+                                    embedded product carries no price, so the old
+                                    expression rendered "NaN EGP". */}
+                                {cartLineTotal(item).toFixed(2)} EGP
                               </p>
                             </div>
                           </div>

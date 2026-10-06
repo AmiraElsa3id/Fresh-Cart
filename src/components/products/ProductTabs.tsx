@@ -1,0 +1,244 @@
+"use client";
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Check, Truck, ShieldCheck, RotateCcw } from "lucide-react";
+import { effectivePrice, type Product, type Review } from "@/lib/types";
+import { StarRating } from "./StarRating";
+
+/**
+ * The tabbed panel — product-details node `24:2571`.
+ *
+ * A white card (radius 8, `effect_c5bd7c6c`) with a bottom-bordered tab strip and
+ * a 24px-gapped body. Active tab: `rgba(240,253,244,.5)` fill with a 2px
+ * `#16A34A` underline and `#16A34A` text; inactive is `#6A7282` on transparent.
+ *
+ * The design only renders the Product Details panel — Reviews and Shipping are
+ * labelled there but their contents were not exported. Reviews are built from
+ * the `reviews` array the single-product endpoint returns (the list endpoint
+ * omits it), and Shipping uses the same three promises as the trust strip.
+ */
+
+const CARD_SHADOW = "shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.1),0px_1px_3px_0px_rgba(0,0,0,0.1)]";
+
+/** The API returns `subcategory` as an array on every product, sometimes with one entry. */
+function firstSubcategory(product: Product) {
+  if (!product.subcategory) return undefined;
+  return Array.isArray(product.subcategory) ? product.subcategory[0] : product.subcategory;
+}
+
+function subcategoryName(product: Product) {
+  return firstSubcategory(product)?.name;
+}
+
+function formatDate(value?: string) {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
+
+function formatSold(value?: number) {
+  if (value == null) return null;
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
+  if (value >= 1_000) return `${(value / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
+  return String(value);
+}
+
+const KEY_FEATURES = [
+  "Premium Quality Product",
+  "100% Authentic Guarantee",
+  "Fast & Secure Packaging",
+  "Quality Tested",
+] as const;
+
+/**
+ * Label on the left, value on the right. Both spans need `min-w-0` and the value
+ * needs to be allowed to shrink: a long category name plus a long value
+ * overflowed the card by 44px at 1024px wide, which added a horizontal scrollbar
+ * to the whole page.
+ */
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <li className="flex items-start justify-between gap-4">
+      <span className="min-w-0 shrink text-sm font-medium text-slate-500">{label}</span>
+      <span className="min-w-0 truncate text-right text-sm font-medium text-ink" title={value}>
+        {value}
+      </span>
+    </li>
+  );
+}
+
+function ReviewRow({ review }: { review: Review }) {
+  const rating = review.rating ?? 0;
+  const date = formatDate(review.createdAt);
+
+  return (
+    <li className="rounded-lg bg-surface p-4">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-semibold text-ink">
+            {review.user?.name || "Anonymous"}
+          </span>
+          <StarRating value={rating} className="size-3.5" />
+        </div>
+        {date && <span className="text-xs text-slate-500">{date}</span>}
+      </div>
+      {review.review && <p className="text-sm leading-6 text-[#6A7282]">{review.review}</p>}
+    </li>
+  );
+}
+
+interface ProductTabsProps {
+  product: Product;
+  reviews: Review[];
+}
+
+export function ProductTabs({ product, reviews }: ProductTabsProps) {
+  const categoryName = product.category?.name;
+  const subName = subcategoryName(product);
+  const brandName = product.brand?.name;
+  const sold = formatSold(product.sold);
+  const price = effectivePrice(product);
+
+  const ratingCount = product.ratingsQuantity ?? reviews.length;
+  const average = product.ratingsAverage ?? 0;
+
+  return (
+    <section className={`rounded-lg bg-white ${CARD_SHADOW}`} aria-label="Product information">
+      <Tabs defaultValue="details" className="w-full gap-0">
+        <TabsList
+          variant="line"
+          /*
+           * `h-auto!` and `flex-none` are both overrides of the base-nova
+           * defaults, so they need `!`. The defaults are `group-data-horizontal/
+           * tabs:h-8` (a 32px pill row) and `flex-1` on every trigger, which is
+           * what the compact variant wants. The design's product-details tabs are
+           * a full-height underlined bar with `px-4 py-4 text-base`, so the height
+           * is intrinsic and each trigger keeps its own label width instead of
+           * being grown to an equal third.
+           */
+          className="h-auto! w-full justify-start gap-0 overflow-x-auto border-b border-border px-2 sm:px-4"
+        >
+          <TabsTrigger
+            value="details"
+            className="h-auto! flex-none gap-2 rounded-none border-b-2 border-transparent px-4 py-4 text-base font-medium text-slate-500 data-active:border-primary data-active:bg-[rgba(240,253,244,0.5)] data-active:text-primary data-active:shadow-none sm:px-6"
+          >
+            Product Details
+          </TabsTrigger>
+          <TabsTrigger
+            value="reviews"
+            className="h-auto! flex-none gap-2 rounded-none border-b-2 border-transparent px-4 py-4 text-base font-medium text-slate-500 data-active:border-primary data-active:bg-[rgba(240,253,244,0.5)] data-active:text-primary data-active:shadow-none sm:px-6"
+          >
+            Reviews ({ratingCount})
+          </TabsTrigger>
+          <TabsTrigger
+            value="shipping"
+            className="h-auto! flex-none gap-2 rounded-none border-b-2 border-transparent px-4 py-4 text-base font-medium text-slate-500 data-active:border-primary data-active:bg-[rgba(240,253,244,0.5)] data-active:text-primary data-active:shadow-none sm:px-6"
+          >
+            Shipping &amp; Returns
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="details" className="p-4 sm:p-6">
+          <div className="space-y-6">
+            <div>
+              <h3 className="mb-2 text-lg font-semibold text-ink">About this Product</h3>
+              <p className="text-base font-medium leading-6 text-slate-500">
+                {product.description || "No description available for this product."}
+              </p>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="rounded-lg bg-surface p-4">
+                <h4 className="mb-3 text-base font-medium text-ink">Product Information</h4>
+                <ul className="space-y-2">
+                  {categoryName && <InfoRow label="Category" value={categoryName} />}
+                  {subName && <InfoRow label="Subcategory" value={subName} />}
+                  {brandName && <InfoRow label="Brand" value={brandName} />}
+                  <InfoRow label="Price" value={`${price.toFixed(2)} EGP`} />
+                  {sold && <InfoRow label="Items Sold" value={`${sold} sold`} />}
+                </ul>
+              </div>
+
+              <div className="rounded-lg bg-surface p-4">
+                <h4 className="mb-3 text-base font-medium text-ink">Key Features</h4>
+                <ul className="space-y-2">
+                  {KEY_FEATURES.map((feature) => (
+                    <li key={feature} className="flex items-center gap-2 text-base font-medium text-[#364153]">
+                      <Check aria-hidden="true" className="size-4 shrink-0 text-primary" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="reviews" className="p-4 sm:p-6">
+          <div className="space-y-6">
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-bold text-ink">{average.toFixed(1)}</span>
+                <span className="text-sm font-medium text-slate-500">out of 5</span>
+              </div>
+              <StarRating value={average} className="size-5" />
+              <span className="text-sm font-medium text-slate-500">
+                Based on {ratingCount} {ratingCount === 1 ? "review" : "reviews"}
+              </span>
+            </div>
+
+            {reviews.length > 0 ? (
+              <ul className="space-y-3">
+                {reviews.map((review) => (
+                  <ReviewRow key={review._id} review={review} />
+                ))}
+              </ul>
+            ) : (
+              <p className="rounded-lg bg-surface p-6 text-center text-sm text-slate-500">
+                No reviews yet. Be the first to share your experience.
+              </p>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="shipping" className="p-4 sm:p-6">
+          <div className="space-y-6">
+            <div>
+              <h3 className="mb-2 text-lg font-semibold text-ink">Shipping &amp; Returns</h3>
+              <p className="text-base font-medium leading-6 text-slate-500">
+                Orders are packed and dispatched within 24 hours. Delivery takes 2–5 working days
+                depending on your governorate, and is free on orders over 500 EGP.
+              </p>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-3">
+              {[
+                { icon: Truck, title: "Free Delivery", body: "On orders over 500 EGP" },
+                { icon: RotateCcw, title: "30 Days Return", body: "Money back guarantee" },
+                { icon: ShieldCheck, title: "Secure Payment", body: "100% protected checkout" },
+              ].map(({ icon: Icon, title, body }) => (
+                <div key={title} className="rounded-lg bg-surface p-4">
+                  <div className="mb-3 flex size-10 items-center justify-center rounded-full bg-[#DCFCE7]">
+                    <Icon aria-hidden="true" className="size-5 text-[#16A34A]" />
+                  </div>
+                  <h4 className="text-sm font-medium text-ink">{title}</h4>
+                  <p className="text-xs font-medium text-slate-500">{body}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="rounded-lg bg-surface p-4">
+              <h4 className="mb-2 text-base font-medium text-ink">Returns policy</h4>
+              <p className="text-sm leading-6 text-slate-500">
+                Items may be returned within 30 days of delivery in their original packaging.
+                Refunds are issued to the original payment method within 5–7 working days of
+                the item being received back at our warehouse.
+              </p>
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </section>
+  );
+}

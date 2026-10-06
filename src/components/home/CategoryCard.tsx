@@ -13,6 +13,12 @@ interface CategoryCardProps {
  * Links to the category's subcategory/product page. Sizes itself via className so
  * the same card works in the home-page scroller and the /category grid.
  */
+/** Slugs are kebab-case; the raw name is the fallback for records without one. */
+function slugOf(category: Category) {
+  if (category.slug) return category.slug;
+  return category.name.toLowerCase().trim().replace(/\s+/g, "-");
+}
+
 export function CategoryCard({ category, className, isLoading = false }: CategoryCardProps) {
   if (isLoading) {
     return (
@@ -26,7 +32,7 @@ export function CategoryCard({ category, className, isLoading = false }: Categor
   }
 
   return (
-    <Link to={`/category/subcategories/${category.name}`} className="block h-full">
+    <Link to={`/category/subcategories/${slugOf(category)}`} className="block h-full">
       <Card className={`h-full overflow-hidden hover:shadow-md transition-shadow ${className ?? ""}`}>
         <div className="aspect-square overflow-hidden bg-surface-2">
           <img

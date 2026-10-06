@@ -1,12 +1,19 @@
+/**
+ * Header and mobile-menu links, in the order Figma `16:7292` shows them:
+ * Home, Shop, Categories, Brands. "Shop" is the design's label for the product
+ * listing, which the app calls `/products`.
+ *
+ * Wishlist is deliberately absent — the design reaches it through the heart icon
+ * in the actions group, and a text link next to that icon duplicates it.
+ */
 export const siteConfig = {
   name: "FreshCart",
   description: "Fresh groceries delivered fast",
   navLinks: [
     { href: "/", label: "Home" },
-    { href: "/brands", label: "Brands" },
-    { href: "/products", label: "Products" },
+    { href: "/products", label: "Shop" },
     { href: "/category", label: "Categories" },
-    { href: "/wishlist", label: "Wishlist" },
+    { href: "/brands", label: "Brands" },
   ],
   footerLinks: {
     company: [

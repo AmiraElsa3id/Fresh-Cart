@@ -31,6 +31,12 @@ export default tseslint.config(
       // and produces false positives on typed components.
       'react/prop-types': 'off',
       'react/jsx-no-target-blank': 'off',
+      // The plugin was registered but its recommended rule set was never applied,
+      // so `rules-of-hooks` never ran. That is how `CheckoutPage` got away with
+      // calling `useForm` after three early returns - React then threw error #310
+      // ("Rendered more hooks than during the previous render") the moment a
+      // loading cart resolved into a populated one.
+      ...reactHooks.configs['recommended-latest'].rules,
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },
@@ -59,6 +65,7 @@ export default tseslint.config(
     rules: {
       'react/prop-types': 'error',
       'react/jsx-no-target-blank': 'off',
+      ...reactHooks.configs['recommended-latest'].rules,
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },

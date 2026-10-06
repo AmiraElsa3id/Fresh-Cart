@@ -8,18 +8,35 @@ interface ProductGridProps {
   columns?: { base: number; sm: number; md: number; lg: number; xl: number };
 }
 
+/**
+ * Tailwind can only see class names it can find as literal strings, so the
+ * counts are looked up in a static table instead of being interpolated. An
+ * earlier version read `columns.base` and wrote `grid-template-columns` inline,
+ * which pinned every breakpoint to a single column and left the home grid one
+ * product wide on a 1200px screen.
+ */
+const BREAKPOINTS = [
+  { prefix: "", key: "base" },
+  { prefix: "sm:", key: "sm" },
+  { prefix: "md:", key: "md" },
+  { prefix: "lg:", key: "lg" },
+  { prefix: "xl:", key: "xl" },
+] as const;
+
+function columnClasses(columns: NonNullable<ProductGridProps["columns"]>) {
+  return BREAKPOINTS.map(({ prefix, key }) => `${prefix}grid-cols-${columns[key]}`).join(" ");
+}
+
 export function ProductGrid({
   products,
   isLoading = false,
   columns = { base: 1, sm: 2, md: 3, lg: 4, xl: 5 },
 }: ProductGridProps) {
-  const gridStyle = {
-    gridTemplateColumns: `repeat(${columns.base}, minmax(0, 1fr))`,
-  };
+  const gridClassName = columnClasses(columns);
 
   if (isLoading) {
     return (
-      <div className="grid gap-4" style={gridStyle}>
+      <div className={`grid gap-4 ${gridClassName}`}>
         {Array.from({ length: 8 }).map((_, i) => (
           <ProductCardSkeleton key={i} />
         ))}
@@ -38,7 +55,7 @@ export function ProductGrid({
   }
 
   return (
-    <div className="grid gap-6" style={gridStyle}>
+    <div className={`grid gap-6 ${gridClassName}`}>
       {products.map((product) => (
         <ProductCard key={product._id} product={product} />
       ))}

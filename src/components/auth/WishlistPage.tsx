@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Trash2, ShoppingCart, Heart } from "lucide-react";
+import { slugOf } from "@/lib/slug";
 import { toast } from "sonner";
 
 export function WishlistPage() {
@@ -54,7 +55,7 @@ export function WishlistPage() {
         {wishlistItems.map((item) => (
           <Card key={item._id} className="h-full flex flex-col">
             <div className="relative aspect-square overflow-hidden">
-              <Link to={`/product-details/${item._id}/${item.category?.name}`}>
+              <Link to={`/product-details/${item._id}/${item.category ? slugOf(item.category) : ""}`}>
                 <img
                   src={item.imageCover}
                   alt={item.title}
@@ -78,7 +79,7 @@ export function WishlistPage() {
               </button>
             </div>
             <CardContent className="flex-1 flex flex-col p-4">
-              <Link to={`/product-details/${item._id}/${item.category?.name}`}>
+              <Link to={`/product-details/${item._id}/${item.category ? slugOf(item.category) : ""}`}>
                 <span className="text-xs font-medium text-primary mb-1 block">{item.category?.name}</span>
                 <h3 className="font-semibold text-ink line-clamp-2 mb-2">{item.title}</h3>
               </Link>
