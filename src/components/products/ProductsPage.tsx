@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Package, Filter } from "lucide-react";
 import { ProductGrid } from "./ProductGrid";
+import { Pagination } from "./Pagination";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -45,6 +46,16 @@ const SORT_OPTIONS = [
 const SORT_LABELS: Record<string, string> = Object.fromEntries(
   SORT_OPTIONS.map((option) => [option.value, option.label]),
 );
+
+/**
+ * Products per page.
+ *
+ * The design's frames show one unbroken grid and its own "Showing 40 products"
+ * is the mock dataset, not a page size. 20 is chosen for what it costs: at the
+ * listing's 5-column desktop grid that is four rows, so 20 cards and 20 image
+ * requests instead of 56 and 56.
+ */
+const PAGE_SIZE = 20;
 
 export function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -144,6 +155,49 @@ export function ProductsPage() {
   );
 
   const activeFacets = countActiveFacets(facets);
+
+  /**
+   * The page lives in the URL. `page` is clamped rather than validated here:
+   * `Pagination` already refuses to render out-of-range controls, and the effect
+   * below rewrites the URL so a stale `?page=99` cannot survive a filter change.
+   */
+  const pageParam = Number.parseInt(searchParams.get("page") ?? "1", 10);
+  const page = Number.isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
+
+  const setPage = useCallback(
+    (next: number) => {
+      setSearchParams(
+        (previous) => {
+          const params = new URLSearchParams(previous);
+          if (next <= 1) params.delete("page");
+          else params.set("page", String(next));
+          return params;
+        },
+        // `replace` rather than `push`: paging is not navigation worth a
+        // back-stack entry per click, and the browser's back button should leave
+        // the listing rather than walk every page the visitor paged through.
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
+
+  // Any change to the result set invalidates the current page: without this,
+  // filtering down to 3 products while on page 3 shows an empty grid.
+  const resultKey = `${term}|${JSON.stringify(facets)}|${sortBy}`;
+  const [lastResultKey, setLastResultKey] = useState(resultKey);
+  useEffect(() => {
+    if (resultKey === lastResultKey) return;
+    setLastResultKey(resultKey);
+    if (page !== 1) setPage(1);
+  }, [resultKey, lastResultKey, page, setPage]);
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount);
+  const visibleProducts = useMemo(
+    () => sortedProducts.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+    [sortedProducts, safePage],
+  );
 
   return (
     <div className="flex min-h-screen flex-col items-center bg-[#F9FAFB] pb-8">
@@ -271,9 +325,17 @@ export function ProductsPage() {
           {/* The design's grid is 4 columns of 292px once the 256px sidebar is in
               place, so the column count steps down from 5 to 4 at `lg`. */}
           <ProductGrid
-            products={sortedProducts}
+            products={visibleProducts}
             isLoading={isLoading}
             columns={{ base: 1, sm: 2, md: 3, lg: 3, xl: 4 }}
+          />
+
+          <Pagination
+            page={safePage}
+            pageSize={PAGE_SIZE}
+            total={filtered.length}
+            onPageChange={setPage}
+            className="mt-8"
           />
         </div>
       </div>

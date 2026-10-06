@@ -1,6 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
+import { slugOf } from "@/lib/slug";
+import { CategoryImage } from "./CategoryImage";
 import type { Category } from "@/lib/types";
 
 interface CategoryCardProps {
@@ -13,12 +15,6 @@ interface CategoryCardProps {
  * Links to the category's subcategory/product page. Sizes itself via className so
  * the same card works in the home-page scroller and the /category grid.
  */
-/** Slugs are kebab-case; the raw name is the fallback for records without one. */
-function slugOf(category: Category) {
-  if (category.slug) return category.slug;
-  return category.name.toLowerCase().trim().replace(/\s+/g, "-");
-}
-
 export function CategoryCard({ category, className, isLoading = false }: CategoryCardProps) {
   if (isLoading) {
     return (
@@ -35,12 +31,11 @@ export function CategoryCard({ category, className, isLoading = false }: Categor
     <Link to={`/category/subcategories/${slugOf(category)}`} className="block h-full">
       <Card className={`h-full overflow-hidden hover:shadow-md transition-shadow ${className ?? ""}`}>
         <div className="aspect-square overflow-hidden bg-surface-2">
-          <img
+          <CategoryImage
             src={category.image}
+            slug={slugOf(category)}
+            name={category.name}
             alt={category.name}
-            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-            loading="lazy"
-            decoding="async"
             width={200}
             height={200}
           />

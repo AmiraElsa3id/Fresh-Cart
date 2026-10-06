@@ -38,6 +38,12 @@
   /* brand */
   --color-primary: #16a34a; /* "Salem" - buttons, active states */
   --color-primary-dark: #009966;
+  /* The design's "Scandal" green. Added so `bg-primary/50` resolves to the
+     `rgba(240,253,244,.5)` fill the product-details tab strip and the cart
+     summary use, instead of those fills being written inline as arbitrary
+     values. */
+  --color-primary-50: #f0fdf4;
+  --color-primary-100: #dcfce7;
   --color-ink: #1e2939;
   --color-slate-500: #6a7282;
   --color-surface: #f9fafb;

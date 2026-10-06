@@ -1,5 +1,6 @@
 import { useSubCategories, useCategoryBySlug, useProductsByCategory } from "@/lib/hooks";
 import { ProductGrid } from "../products/ProductGrid";
+import { CategoryImage } from "./CategoryImage";
 import { Link, useParams } from "react-router-dom";
 import type { Product } from "@/lib/types";
 
@@ -121,12 +122,12 @@ export function SubCategoriesPage() {
                 className="block p-4 rounded-xl bg-surface-2 hover:bg-surface hover:shadow-md transition-all text-center"
               >
                 <div className="w-20 h-20 mx-auto mb-3 rounded-full bg-white flex items-center justify-center overflow-hidden">
-                  <img
+                  <CategoryImage
                     src={sub.image}
+                    slug={sub.slug}
+                    name={sub.name}
                     alt={sub.name}
                     loading="lazy"
-                    decoding="async"
-                    className="w-full h-full object-cover"
                   />
                 </div>
                 <span className="text-sm font-medium text-ink line-clamp-1">{sub.name}</span>

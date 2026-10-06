@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { useCategories } from "@/lib/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 import { slugOf } from "@/lib/slug";
+import { CategoryImage } from "./CategoryImage";
 import type { Category } from "@/lib/types";
 
 /**
@@ -28,10 +29,11 @@ function CategoryTile({ category }: { category: Category }) {
       className={`flex flex-col items-center gap-3 rounded-lg bg-white p-4 transition-shadow hover:shadow-md ${CARD_SHADOW}`}
     >
       <div className="flex size-20 items-center justify-center overflow-hidden rounded-full bg-[#DCFCE7]">
-        <img
+        <CategoryImage
           src={category.image}
+          slug={slugOf(category)}
+          name={category.name}
           alt=""
-          className="size-20 object-cover"
           loading="lazy"
           width={80}
           height={80}

@@ -1,7 +1,7 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Check, Truck, ShieldCheck, RotateCcw } from "lucide-react";
+import { Check, ClipboardList, MessageSquare, RotateCcw, ShieldCheck, Truck } from "lucide-react";
 import { effectivePrice, type Product, type Review } from "@/lib/types";
 import { StarRating } from "./StarRating";
 
@@ -19,6 +19,56 @@ import { StarRating } from "./StarRating";
  */
 
 const CARD_SHADOW = "shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.1),0px_1px_3px_0px_rgba(0,0,0,0.1)]";
+
+/**
+ * Tab strip — `24:2572`.
+ *
+ * The design draws a 1px `#E5E7EB` rule under a horizontally scrollable row of
+ * buttons. The active one (`24:2574`) is `rgba(240,253,244,0.5)` with a 2px
+ * `#16A34A` bottom stroke, its label and its 17.5x14 glyph both `#16A34A`. The
+ * inactive ones (`24:2580`, `24:2584`) have no fill and no stroke, with the
+ * label and glyph in `#4A5565`. Padding is `16px 24px` and the gap is 8px.
+ *
+ * Three things have to be overridden explicitly, because base-nova's `line`
+ * variant fights all of them:
+ *
+ * - `h-auto!` — the list defaults to a 32px pill row
+ *   (`group-data-horizontal/tabs:h-8`) and the triggers to `h-[calc(100%-1px)]`.
+ *   `!` is needed to beat a group-data utility.
+ * - `flex-none` — the triggers default to `flex-1`, which stretches every label
+ *   to a third of the row instead of letting it keep its own width.
+ * - `after:hidden` — the `line` variant paints its own `::after` underline in
+ *   `bg-foreground` at `bottom:-5px`. With a real 2px border underneath, the
+ *   active tab drew two indicators five pixels apart and the dark one was the
+ *   visible one.
+ *
+ * The inactive half-pixel of extra vertical padding is the design's own
+ * (`16.5px ... 17.5px`): it keeps an inactive button exactly as tall as an active
+ * one once that one grows its 2px border, so the row does not jump on click.
+ */
+const TAB_TRIGGER =
+  "h-auto! flex-none gap-2 rounded-none border-b-2 px-6 py-4 text-base font-medium leading-6 " +
+  // Inactive first, so the `data-active:` rules win on the properties they share.
+  "border-transparent text-[#4A5565] hover:bg-[#F9FAFB] hover:text-[#364153] " +
+  // `!` is required, not defensive. base-nova's `line` variant carries
+  // `group-data-[variant=line]/tabs-list:data-active:bg-transparent`, which
+  // compiles to two attribute selectors (0,2,0) and beats any single-class rule
+  // (0,1,0) — so the design's fill was emitted and then silently overridden.
+  // `rgb(240_253_244/0.5)` uses underscores rather than commas because an
+  // arbitrary value containing commas after a custom variant is never emitted by
+  // Tailwind at all. `bg-primary/50` is not a substitute: the slash modifier
+  // resolves against `--color-primary` (#16A34A), giving green at 50% alpha
+  // rather than the design's pale wash.
+  "data-active:border-[#16A34A] data-active:!bg-[rgb(240_253_244/0.5)] data-active:text-[#16A34A] " +
+  "data-active:shadow-none after:hidden";
+
+/**
+ * The design's glyphs are 17.5x14. base-nova sizes any SVG inside a trigger with
+ * `[&_svg:not([class*='size-'])]:size-4`, and that selector wins over a plain
+ * `h-3.5 w-[18px]`, so the size is expressed as `size-[18px]` to land inside the
+ * `:not()` and take precedence.
+ */
+const TAB_ICON = "size-[18px] shrink-0";
 
 /** The API returns `subcategory` as an array on every product, sometimes with one entry. */
 function firstSubcategory(product: Product) {
@@ -109,32 +159,24 @@ export function ProductTabs({ product, reviews }: ProductTabsProps) {
         <TabsList
           variant="line"
           /*
-           * `h-auto!` and `flex-none` are both overrides of the base-nova
-           * defaults, so they need `!`. The defaults are `group-data-horizontal/
-           * tabs:h-8` (a 32px pill row) and `flex-1` on every trigger, which is
-           * what the compact variant wants. The design's product-details tabs are
-           * a full-height underlined bar with `px-4 py-4 text-base`, so the height
-           * is intrinsic and each trigger keeps its own label width instead of
-           * being grown to an equal third.
+           * `h-auto!` beats the base-nova `group-data-horizontal/tabs:h-8` pill
+           * row. The bottom rule is the design's `#E5E7EB`, not the token
+           * `--color-border` (`#D5DAE1`), which reads heavier than the design's
+           * hairline. `scrollbar-hide` keeps the horizontal scroll the design
+           * specifies from also showing a scrollbar on Windows.
            */
-          className="h-auto! w-full justify-start gap-0 overflow-x-auto border-b border-border px-2 sm:px-4"
+          className="h-auto! w-full justify-start gap-0 overflow-x-auto scrollbar-hide border-b border-[#E5E7EB] px-0 sm:px-0"
         >
-          <TabsTrigger
-            value="details"
-            className="h-auto! flex-none gap-2 rounded-none border-b-2 border-transparent px-4 py-4 text-base font-medium text-slate-500 data-active:border-primary data-active:bg-[rgba(240,253,244,0.5)] data-active:text-primary data-active:shadow-none sm:px-6"
-          >
+          <TabsTrigger value="details" className={TAB_TRIGGER}>
+            <ClipboardList aria-hidden="true" className={TAB_ICON} />
             Product Details
           </TabsTrigger>
-          <TabsTrigger
-            value="reviews"
-            className="h-auto! flex-none gap-2 rounded-none border-b-2 border-transparent px-4 py-4 text-base font-medium text-slate-500 data-active:border-primary data-active:bg-[rgba(240,253,244,0.5)] data-active:text-primary data-active:shadow-none sm:px-6"
-          >
+          <TabsTrigger value="reviews" className={TAB_TRIGGER}>
+            <MessageSquare aria-hidden="true" className={TAB_ICON} />
             Reviews ({ratingCount})
           </TabsTrigger>
-          <TabsTrigger
-            value="shipping"
-            className="h-auto! flex-none gap-2 rounded-none border-b-2 border-transparent px-4 py-4 text-base font-medium text-slate-500 data-active:border-primary data-active:bg-[rgba(240,253,244,0.5)] data-active:text-primary data-active:shadow-none sm:px-6"
-          >
+          <TabsTrigger value="shipping" className={TAB_TRIGGER}>
+            <Truck aria-hidden="true" className={TAB_ICON} />
             Shipping &amp; Returns
           </TabsTrigger>
         </TabsList>
