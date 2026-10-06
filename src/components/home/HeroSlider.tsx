@@ -79,6 +79,7 @@ export function HeroSlider() {
                       <Button
                         size="lg"
                         className="animate-fade-in-up delay-200 bg-primary hover:bg-primary-dark"
+                        nativeButton={false}
                         render={<a href={slide.ctaHref} />}
                       >
                         {slide.ctaText}

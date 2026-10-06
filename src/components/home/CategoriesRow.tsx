@@ -1,45 +1,6 @@
 import { useCategories } from "@/lib/hooks";
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { CategoryCard } from "./CategoryCard";
 import { cn } from "@/lib/utils";
-import { Link } from "react-router-dom";
-import type { Category } from "@/lib/types";
-
-interface CategoryCardProps {
-  category: Category;
-  isLoading?: boolean;
-}
-
-function CategoryCard({ category, isLoading = false }: CategoryCardProps) {
-  if (isLoading) {
-    return (
-      <Card className="w-40 flex-shrink-0">
-        <Skeleton className="aspect-square rounded-t-lg" />
-        <CardContent className="p-3">
-          <Skeleton className="h-4 w-3/4 rounded" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Link to={`/category/subcategories/${category.name}`} className="block">
-      <Card className="w-40 flex-shrink-0 hover:shadow-md transition-shadow">
-        <div className="aspect-square overflow-hidden rounded-t-lg bg-surface-2">
-          <img
-            src={category.image}
-            alt={category.name}
-            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-            loading="lazy"
-          />
-        </div>
-        <CardContent className="p-3 text-center">
-          <span className="text-sm font-medium text-ink line-clamp-1">{category.name}</span>
-        </CardContent>
-      </Card>
-    </Link>
-  );
-}
 
 interface CategoriesRowProps {
   className?: string;
@@ -61,10 +22,14 @@ export function CategoriesRow({ className, limit = 10 }: CategoriesRowProps) {
         >
           {isLoading
             ? Array.from({ length: limit }).map((_, i) => (
-                <CategoryCard key={i} category={{ _id: "", name: "", image: "" }} isLoading />
+                <CategoryCard key={i} category={{ _id: "", name: "", image: "" }} className="w-40 flex-shrink-0" isLoading />
               ))
             : categories?.slice(0, limit).map((category) => (
-                <CategoryCard key={category._id} category={category} />
+                <CategoryCard
+                  key={category._id}
+                  category={category}
+                  className="w-40 flex-shrink-0"
+                />
               ))}
         </div>
       </div>

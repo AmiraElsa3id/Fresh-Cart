@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -14,9 +14,9 @@ interface PromoCardProps {
 
 function PromoCard({ title, description, gradient, ctaText, ctaHref, icon }: PromoCardProps) {
   return (
-    <Link to={ctaHref}>
+    <Link to={ctaHref} className="block h-full group">
       <Card
-        className="relative overflow-hidden h-full min-h-[200px] text-white"
+        className="relative overflow-hidden h-full min-h-[200px] text-white transition-shadow group-hover:shadow-lg"
         style={{ background: gradient }}
       >
         <CardContent className="relative z-10 p-8 flex flex-col justify-between h-full">
@@ -25,14 +25,19 @@ function PromoCard({ title, description, gradient, ctaText, ctaHref, icon }: Pro
             <h3 className="text-2xl font-bold mb-2">{title}</h3>
             <p className="text-white/90">{description}</p>
           </div>
-          <Button
-            variant="outline"
-            className="w-fit border-white text-white hover:bg-white/10"
-            render={<a href={ctaHref} className="flex items-center gap-2" />}
+          {/* The whole card is already a <Link>, so the CTA is an affordance
+              rather than a second link. Nested <a> elements are invalid HTML
+              and confuse screen readers. */}
+          <span
+            className={buttonVariants({
+              variant: "outline",
+              className:
+                "w-fit border-white text-white pointer-events-none group-hover:bg-white/10",
+            })}
           >
             {ctaText}
-            <ArrowRight className="w-4 h-4" />
-          </Button>
+            <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
+          </span>
         </CardContent>
       </Card>
     </Link>

@@ -2,6 +2,7 @@
 
 import { useCategories } from "@/lib/hooks";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -34,6 +35,17 @@ function CategoryCard({ category }: CategoryCardProps) {
   );
 }
 
+function CategoryCardSkeleton() {
+  return (
+    <Card className="w-40 flex-shrink-0">
+      <Skeleton className="aspect-square rounded-t-lg" />
+      <CardContent className="p-3">
+        <Skeleton className="mx-auto h-4 w-3/4 rounded" />
+      </CardContent>
+    </Card>
+  );
+}
+
 export function CategorySlider({ className, limit = 14 }: { className?: string; limit?: number }) {
   const { data: categories, isLoading } = useCategories();
   const [emblaRef, emblaApi] = useEmblaCarousel(
@@ -46,13 +58,10 @@ export function CategorySlider({ className, limit = 14 }: { className?: string; 
 
   if (isLoading) {
     return (
-      <div className={cn("hidden md:block mb-6 px-4", className)}>
+      <div className={cn("hidden md:block mb-6 px-4", className)} role="status" aria-label="Loading categories">
         <div ref={emblaRef} className="flex gap-4 overflow-hidden">
           {Array.from({ length: limit }).map((_, i) => (
-            <CategoryCard
-              key={i}
-              category={{ _id: "", name: "", image: "" }}
-            />
+            <CategoryCardSkeleton key={i} />
           ))}
         </div>
       </div>

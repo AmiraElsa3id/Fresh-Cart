@@ -1,7 +1,6 @@
 import { useCategories, useSubCategories, useProductsByCategory } from "@/lib/hooks";
 import { ProductGrid } from "../products/ProductGrid";
-import { useParams } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 export function SubCategoriesPage() {
   const { name } = useParams<{ name: string }>();

@@ -1,13 +1,15 @@
 "use client";
 
+import { Suspense } from "react";
 import { Outlet } from "react-router-dom";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
-import { Toaster } from "sonner";
 import { useCart } from "@/lib/hooks";
 import { useWishlist } from "@/lib/hooks";
 import { useAuthStore } from "@/lib/store";
+import { RouteFallback } from "./RouteFallback";
 
+// The Toaster lives in App, above the router, so toasts survive navigation.
 export function Layout() {
   const { data: cart } = useCart();
   const { data: wishlist } = useWishlist();
@@ -26,18 +28,12 @@ export function Layout() {
         userName={user?.name}
       />
       <main className="flex-1 pt-20 pb-10">
-        <Outlet />
+        {/* Route chunks are lazy, so the outlet needs a boundary to suspend into. */}
+        <Suspense fallback={<RouteFallback />}>
+          <Outlet />
+        </Suspense>
       </main>
       <Footer />
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          classNames: {
-            toast: "bg-white border border-gray-200 shadow-lg",
-            description: "text-slate-600",
-          },
-        }}
-      />
     </div>
   );
 }
