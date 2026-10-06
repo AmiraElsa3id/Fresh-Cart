@@ -2,7 +2,8 @@ import React from 'react'
 import mainImg from '../../assets/imgs/slider-image-1.jpeg'
 import img1 from '../../assets/imgs/slider-image-2.jpeg'
 import img2 from '../../assets/imgs/slider-image-3.jpeg'
-import Slider from 'react-slick'
+import * as SliderPkg from 'react-slick'
+const Slider = SliderPkg.default || SliderPkg
 
 export default function MainSlider() {
 
