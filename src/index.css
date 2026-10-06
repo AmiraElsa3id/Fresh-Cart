@@ -1,18 +1,6 @@
 @import "tailwindcss";
 
 /*
- * The `base-nova` style this project is on ships its variants and utilities in
- * `shadcn/tailwind.css`, and `components.json` -> `style: base-nova` expects this
- * import. Without it `data-horizontal:` / `data-vertical:` fell back to Tailwind's
- * plain attribute-shorthand, compiling to `[data-horizontal]`, which Base UI never
- * emits - it sets `data-orientation="horizontal"`. So every orientation utility in
- * the registry components was silently dead: the Tabs root lost `flex-col` (the tab
- * list and the panel sat side by side and overflowed the page by 44px), and
- * ScrollArea / Separator lost their orientation rules too.
- */
-@import "shadcn/tailwind.css";
-
-/*
  * Design tokens for Figma file 7GOjynvDWj2Lnbb4IKjbXK.
  *
  * Two groups live here on purpose:
