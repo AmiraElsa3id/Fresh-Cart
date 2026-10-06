@@ -3,6 +3,7 @@ import globals from 'globals'
 import react from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
+<<<<<<< HEAD
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
@@ -52,6 +53,18 @@ export default tseslint.config(
       ecmaVersion: 2022,
       globals: globals.browser,
       parserOptions: {
+=======
+
+export default [
+  {
+    files: ['**/*.{js,jsx}'],
+    ignores: ['dist'],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+>>>>>>> d6c6ea6c151ad2afcd5e021a6e8bf436af53b13e
         ecmaFeatures: { jsx: true },
         sourceType: 'module',
       },
@@ -63,15 +76,24 @@ export default tseslint.config(
       'react-refresh': reactRefresh,
     },
     rules: {
+<<<<<<< HEAD
       'react/prop-types': 'error',
       'react/jsx-no-target-blank': 'off',
       ...reactHooks.configs['recommended-latest'].rules,
+=======
+      ...js.configs.recommended.rules,
+      ...react.configs.recommended.rules,
+      ...react.configs['jsx-runtime'].rules,
+      ...reactHooks.configs.recommended.rules,
+      'react/jsx-no-target-blank': 'off',
+>>>>>>> d6c6ea6c151ad2afcd5e021a6e8bf436af53b13e
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },
       ],
     },
   },
+<<<<<<< HEAD
 
   // ------------------------------- shadcn/ui primitives (vendored, generated)
 // Written by the shadcn CLI and regenerated with `shadcn add`; not ours to
@@ -84,3 +106,6 @@ export default tseslint.config(
     },
   },
 )
+=======
+]
+>>>>>>> d6c6ea6c151ad2afcd5e021a6e8bf436af53b13e

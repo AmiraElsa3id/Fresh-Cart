@@ -1,0 +1,4 @@
+.active{
+    @apply bg-teal-600
+    text-white
+}
