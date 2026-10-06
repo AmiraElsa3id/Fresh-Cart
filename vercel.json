@@ -1,5 +1,4 @@
 {
-    "nodejsVersion": "24",
     "rewrites": [
       { "source": "/(.*)", "destination": "/" }
     ]
