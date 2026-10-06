@@ -44,9 +44,14 @@ export function Header({
     <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between gap-4">
-          <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-primary shrink-0" aria-label="FreshCart Home">
-            <span className="text-3xl">🛒</span>
-            <span className="hidden sm:block">FreshCart</span>
+          <Link to="/" className="flex items-center shrink-0" aria-label="FreshCart Home">
+            <img
+              src="/images/freshcart-logo.svg"
+              alt="FreshCart"
+              width={124}
+              height={24}
+              className="h-6 w-auto"
+            />
           </Link>
 
           <div className="flex-1 flex items-center gap-4 max-w-2xl mx-auto">
