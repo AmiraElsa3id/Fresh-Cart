@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api, { API_V2 } from "../api";
+import type { Cart } from "../types";
 
 export function useCart() {
-  return useQuery({
+  return useQuery<Cart>({
     queryKey: ["cart"],
     queryFn: async () => {
       const { data } = await api.get(`${API_V2}/cart`);

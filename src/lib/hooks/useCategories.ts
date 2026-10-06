@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import api from "../api";
+import type { Category } from "../types";
 
 export function useCategories() {
-  return useQuery({
+  return useQuery<Category[]>({
     queryKey: ["categories"],
     queryFn: async () => {
       const { data } = await api.get("/categories");
@@ -14,7 +15,7 @@ export function useCategories() {
 }
 
 export function useCategory(id: string) {
-  return useQuery({
+  return useQuery<Category>({
     queryKey: ["categories", id],
     queryFn: async () => {
       const { data } = await api.get(`/categories/${id}`);
@@ -26,7 +27,7 @@ export function useCategory(id: string) {
 }
 
 export function useSubCategories(categoryId: string) {
-  return useQuery({
+  return useQuery<Category[]>({
     queryKey: ["categories", categoryId, "subcategories"],
     queryFn: async () => {
       const { data } = await api.get(`/categories/${categoryId}/subcategories`);

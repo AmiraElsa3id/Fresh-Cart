@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import api from "../api";
+import type { Product } from "../types";
 
 export function useProducts() {
-  return useQuery({
+  return useQuery<Product[]>({
     queryKey: ["products"],
     queryFn: async () => {
       const { data } = await api.get("/products");
@@ -14,7 +15,7 @@ export function useProducts() {
 }
 
 export function useProduct(id: string) {
-  return useQuery({
+  return useQuery<Product>({
     queryKey: ["products", id],
     queryFn: async () => {
       const { data } = await api.get(`/products/${id}`);
@@ -26,7 +27,7 @@ export function useProduct(id: string) {
 }
 
 export function useProductsByCategory(categoryId: string) {
-  return useQuery({
+  return useQuery<Product[]>({
     queryKey: ["products", "category", categoryId],
     queryFn: async () => {
       const { data } = await api.get(`/products?category[in]=${categoryId}`);
@@ -38,7 +39,7 @@ export function useProductsByCategory(categoryId: string) {
 }
 
 export function useProductsByBrand(brandId: string) {
-  return useQuery({
+  return useQuery<Product[]>({
     queryKey: ["products", "brand", brandId],
     queryFn: async () => {
       const { data } = await api.get(`/products?brand=${brandId}`);

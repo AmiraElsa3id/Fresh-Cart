@@ -1,8 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "../api";
+import type { Product } from "../types";
 
+/**
+ * `GET /wishlist` returns the saved products themselves (not wrapper entries),
+ * so each item is a full product document.
+ */
 export function useWishlist() {
-  return useQuery({
+  return useQuery<Product[]>({
     queryKey: ["wishlist"],
     queryFn: async () => {
       const { data } = await api.get("/wishlist");

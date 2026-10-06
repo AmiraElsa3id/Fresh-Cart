@@ -1,8 +1,14 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import api, { API_V1, API_V2 } from "../api";
+import type {
+  CheckoutSessionResponse,
+  CreateCheckoutSessionInput,
+  CreateOrderInput,
+  Order,
+} from "../types";
 
 export function useOrders() {
-  return useQuery({
+  return useQuery<Order[]>({
     queryKey: ["orders"],
     queryFn: async () => {
       const { data } = await api.get("/orders");
@@ -13,7 +19,7 @@ export function useOrders() {
 }
 
 export function useUserOrders(userId: string) {
-  return useQuery({
+  return useQuery<Order[]>({
     queryKey: ["orders", "user", userId],
     queryFn: async () => {
       const { data } = await api.get(`/orders/user/${userId}`);
@@ -25,44 +31,23 @@ export function useUserOrders(userId: string) {
 }
 
 export function useCreateCashOrder() {
-  return useMutation({
-    mutationFn: async ({
-      cartId,
-      shippingAddress,
-    }: {
-      cartId: string;
-      shippingAddress: {
-        details: string;
-        phone: string;
-        city: string;
-        postalCode?: string;
-      };
-    }) => {
+  return useMutation<Order, Error, CreateOrderInput>({
+    mutationFn: async ({ cartId, shippingAddress }) => {
       const { data } = await api.post(`${API_V2}/orders/${cartId}`, { shippingAddress });
-      return data;
+      return data.data;
     },
   });
 }
 
 export function useCreateCheckoutSession() {
-  return useMutation({
-    mutationFn: async ({
-      cartId,
-      shippingAddress,
-    }: {
-      cartId: string;
-      shippingAddress: {
-        details: string;
-        phone: string;
-        city: string;
-      };
-    }) => {
+  return useMutation<CheckoutSessionResponse, Error, CreateCheckoutSessionInput>({
+    mutationFn: async ({ cartId, shippingAddress }) => {
       const appUrl = import.meta.env.VITE_APP_URL || window.location.origin;
       const { data } = await api.post(
         `${API_V1}/orders/checkout-session/${cartId}?url=${appUrl}`,
         { shippingAddress }
       );
-      return data;
+      return data.data;
     },
   });
 }
