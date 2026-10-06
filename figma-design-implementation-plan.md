@@ -37,15 +37,16 @@ because of three separate bugs:
 ```
 
 **SECURITY — action required by you.** The old config contained a Figma Personal
-Access Token in plaintext:
+Access Token in plaintext. It has been redacted from this file, but it was present
+in a repo-tracked file and remains in this branch's history, so redacting the
+working copy is not enough on its own.
 
-```
-REDACTED
-```
-
-It has been removed from the file, but it was present in a repo-tracked file.
 **Revoke it now** at Figma → Settings → Security → Personal access tokens →
 Revoke. If this branch or file was ever pushed, treat it as compromised.
+
+If it is revoked *before* the first push, the history rewrite below is enough. If
+it was ever pushed anywhere, rotate it and treat every copy of the history as
+public.
 
 **Remaining step (needs you):** OpenCode config changes require a restart.
 
